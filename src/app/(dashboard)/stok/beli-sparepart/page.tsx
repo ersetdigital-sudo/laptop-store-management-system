@@ -29,7 +29,7 @@ export default function BeliSparepartPage() {
   const [categories, setCategories] = useState<Category[]>([])
   const [form, setForm] = useState({
     name: '', category_id: '', specs: '', condition: 'baru' as 'baru' | 'bekas' | 'refurbished',
-    buy_price: 0, sell_price: 0, quantity: 1,
+    buy_price: 0, sell_price: 0, quantity: 0,
     source_type: 'supplier' as 'supplier' | 'customer', source_name: '', source_phone: '',
     purchase_date: todayLocal(), notes: '',
   })
@@ -146,7 +146,7 @@ export default function BeliSparepartPage() {
                 </div>
                 <div>
                   <label className={labelClass}>Qty/Stok *</label>
-                  <Input type="number" min={1} required value={form.quantity} onChange={e => setForm({ ...form, quantity: Math.max(1, Number(e.target.value) || 1) })} onFocus={e => e.target.select()} className="h-10 w-full" />
+                  <Input type="number" min={1} required value={form.quantity || ''} onChange={e => setForm({ ...form, quantity: Number(e.target.value) || 0 })} onBlur={e => { if (!e.target.value || Number(e.target.value) < 1) setForm(f => ({ ...f, quantity: 1 })) }} className="h-10 w-full" />
                 </div>
               </div>
 

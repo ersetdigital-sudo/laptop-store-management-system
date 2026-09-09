@@ -800,7 +800,7 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
 
   // Tambah sparepart ke list
   function addSparepart() {
-    setItems([...items, { product_id: '', name: '', quantity: 1, price: 0, buy_price: 0, max_qty: 0 }])
+    setItems([...items, { product_id: '', name: '', quantity: 0, price: 0, buy_price: 0, max_qty: 0 }])
   }
 
   // Update sparepart item
@@ -986,9 +986,9 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
                         type="number"
                         min={1}
                         max={item.max_qty || 999}
-                        value={item.quantity}
-                        onChange={e => updateItem(i, 'quantity', Math.min(Number(e.target.value), item.max_qty || 999))}
-                        onFocus={e => e.target.select()}
+                        value={item.quantity || ''}
+                        onChange={e => updateItem(i, 'quantity', Number(e.target.value) || 0)}
+                        onBlur={e => { if (!e.target.value || Number(e.target.value) < 1) updateItem(i, 'quantity', 1) }}
                         className="h-9 w-16 rounded-md border border-input bg-surface px-2 text-xs text-center"
                       />
                     </div>

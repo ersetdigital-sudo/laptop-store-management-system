@@ -53,7 +53,7 @@ export default function JualBarangPage() {
 
   // Selected product for adding to cart
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
-  const [addQty, setAddQty] = useState(1)
+  const [addQty, setAddQty] = useState(0)
   const [isPriceEditable, setIsPriceEditable] = useState(false)
   const [customPrice, setCustomPrice] = useState(0)
 
@@ -139,7 +139,7 @@ export default function JualBarangPage() {
     const products = tab === 'unit' ? units : spareparts
     const product = products.find(p => p.id === productId) || null
     setSelectedProduct(product)
-    setAddQty(1)
+    setAddQty(0)
     setIsPriceEditable(false)
     setCustomPrice(product?.sell_price || 0)
   }
@@ -147,6 +147,7 @@ export default function JualBarangPage() {
   // Add to cart
   function addToCart() {
     if (!selectedProduct) return
+    if (addQty < 1) return
     const maxQty = tab === 'unit' ? 1 : selectedProduct.quantity
     const qty = Math.min(addQty, maxQty)
     const price = isPriceEditable ? customPrice : selectedProduct.sell_price
@@ -162,7 +163,7 @@ export default function JualBarangPage() {
 
     // Reset selection
     setSelectedProduct(null)
-    setAddQty(1)
+    setAddQty(0)
     setIsPriceEditable(false)
     setCustomPrice(0)
     showToast('Barang ditambahkan ke keranjang', 'success')
@@ -386,10 +387,10 @@ export default function JualBarangPage() {
       <div className="mx-auto max-w-2xl">
         {/* Tab Toggle */}
         <div className="flex gap-1 rounded-lg border border-border bg-secondary/50 p-1 mb-4">
-          <button onClick={() => { setTab('unit'); setSelectedProduct(null); setAddQty(1) }} className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${tab === 'unit' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <button onClick={() => { setTab('unit'); setSelectedProduct(null); setAddQty(0) }} className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${tab === 'unit' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             <Laptop size={16} /> Unit Laptop
           </button>
-          <button onClick={() => { setTab('sparepart'); setSelectedProduct(null); setAddQty(1) }} className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${tab === 'sparepart' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <button onClick={() => { setTab('sparepart'); setSelectedProduct(null); setAddQty(0) }} className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${tab === 'sparepart' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             <Package size={16} /> Sparepart
           </button>
         </div>
@@ -433,7 +434,7 @@ export default function JualBarangPage() {
                       {tab === 'sparepart' && (
                         <div className="flex-1 min-w-[80px]">
                           <label className="text-[10px] font-medium text-muted-foreground uppercase">Qty</label>
-                          <Input type="number" min={1} max={selectedProduct.quantity} value={addQty} onChange={e => setAddQty(Number(e.target.value))} onFocus={e => e.target.select()} className="h-9 w-full" />
+                          <Input type="number" min={1} max={selectedProduct.quantity} value={addQty || ''} onChange={e => setAddQty(Number(e.target.value) || 0)} onBlur={e => { if (!e.target.value || Number(e.target.value) < 1) setAddQty(1) }} className="h-9 w-full" />
                         </div>
                       )}
                       <div className="flex-1 min-w-[140px]">
