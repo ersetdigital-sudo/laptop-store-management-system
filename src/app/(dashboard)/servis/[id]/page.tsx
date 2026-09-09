@@ -877,6 +877,7 @@ function ServisEditForm({ service, initialParts, onClose, onSaved }: { service: 
                         max={item.max_qty || 999}
                         value={item.quantity}
                         onChange={e => updateItem(i, 'quantity', Math.min(Number(e.target.value), item.max_qty || 999))}
+                        onFocus={e => e.target.select()}
                         className="h-9 w-16 rounded-md border border-input bg-surface px-2 text-xs text-center"
                       />
                     </div>

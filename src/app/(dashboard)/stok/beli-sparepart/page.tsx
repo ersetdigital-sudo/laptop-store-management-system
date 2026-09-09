@@ -146,7 +146,7 @@ export default function BeliSparepartPage() {
                 </div>
                 <div>
                   <label className={labelClass}>Qty/Stok *</label>
-                  <Input type="number" min={1} required value={form.quantity} onChange={e => setForm({ ...form, quantity: Math.max(1, Number(e.target.value) || 1) })} className="h-10 w-full" />
+                  <Input type="number" min={1} required value={form.quantity} onChange={e => setForm({ ...form, quantity: Math.max(1, Number(e.target.value) || 1) })} onFocus={e => e.target.select()} className="h-10 w-full" />
                 </div>
               </div>
 

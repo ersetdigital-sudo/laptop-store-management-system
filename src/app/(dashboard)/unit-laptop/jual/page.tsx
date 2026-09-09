@@ -433,7 +433,7 @@ export default function JualBarangPage() {
                       {tab === 'sparepart' && (
                         <div className="flex-1 min-w-[80px]">
                           <label className="text-[10px] font-medium text-muted-foreground uppercase">Qty</label>
-                          <Input type="number" min={1} max={selectedProduct.quantity} value={addQty} onChange={e => setAddQty(Number(e.target.value))} className="h-9 w-full" />
+                          <Input type="number" min={1} max={selectedProduct.quantity} value={addQty} onChange={e => setAddQty(Number(e.target.value))} onFocus={e => e.target.select()} className="h-9 w-full" />
                         </div>
                       )}
                       <div className="flex-1 min-w-[140px]">

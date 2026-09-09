@@ -494,7 +494,7 @@ export default function BuatKwitansiPage() {
                       </div>
                       <div>
                         <label className={labelClass}>Qty *</label>
-                        <Input type="number" min={1} value={item.quantity} onChange={e => updateItem(item.key, { quantity: Math.max(1, Number(e.target.value) || 1) })} className="h-10 w-full" />
+                        <Input type="number" min={1} value={item.quantity} onChange={e => updateItem(item.key, { quantity: Math.max(1, Number(e.target.value) || 1) })} onFocus={e => e.target.select()} className="h-10 w-full" />
                       </div>
                       <div>
                         <label className={labelClass}>Harga Beli (Rp) *</label>
