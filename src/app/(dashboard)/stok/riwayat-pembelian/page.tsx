@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Search, ShoppingCart, Package, DollarSign, Eye, ChevronLeft, ChevronRight } from 'lucide-react'
+import Link from 'next/link'
+import { Search, ShoppingCart, Package, DollarSign, Eye, ChevronLeft, ChevronRight, FileText } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -94,6 +95,12 @@ export default function RiwayatPembelianPage() {
   return (
     <div className="space-y-3 sm:space-y-4">
       <PageHeader title="Riwayat Pembelian" subtitle="Daftar pembelian sparepart dari supplier">
+        <Link href="/stok/riwayat-kwitansi">
+          <Button variant="ghost" className="gap-1.5 h-10 text-xs sm:text-sm text-muted-foreground">
+            <FileText size={14} />
+            Riwayat Kwitansi
+          </Button>
+        </Link>
         <div className="flex gap-2 w-full sm:w-auto">
           <select
             value={month}

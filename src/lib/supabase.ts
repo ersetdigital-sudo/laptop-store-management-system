@@ -165,9 +165,41 @@ export interface StockMovement {
   product_id: string
   type: 'masuk' | 'keluar'
   quantity: number
-  reference_type: 'pembelian_unit' | 'penjualan_unit' | 'servis' | 'adjustment'
+  reference_type: 'pembelian_unit' | 'penjualan_unit' | 'servis' | 'adjustment' | 'pembelian_sparepart' | 'pembelian_kwitansi'
   reference_id: string | null
   notes: string | null
   created_by: string | null
+  created_at: string
+}
+
+export interface SupplierReceipt {
+  id: string
+  receipt_number: string
+  supplier_name: string
+  supplier_phone: string | null
+  purchase_date: string
+  total: number
+  payment_method: string
+  notes: string | null
+  status: 'selesai' | 'dibatalkan'
+  created_by: string | null
+  created_at: string
+}
+
+export interface SupplierReceiptItem {
+  id: string
+  receipt_id: string
+  product_id: string | null
+  item_type: 'sparepart' | 'unit'
+  item_name: string
+  brand: string | null
+  model: string | null
+  specs: string | null
+  condition: 'baru' | 'bekas' | 'refurbished' | null
+  imei_serial: string | null
+  quantity: number
+  buy_price: number
+  sell_price: number
+  subtotal: number
   created_at: string
 }

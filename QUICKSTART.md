@@ -15,6 +15,23 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
+### 2b. Fresh Database Setup (2 min) — HANYA jika database masih kosong
+
+Jika project Supabase kamu **baru/kosong** (belum ada tabel sama sekali), jangan jalankan
+migration satu per satu — beberapa file akan error karena saling bergantung. Cukup:
+
+1. Buka **Supabase Dashboard → SQL Editor → New query**
+2. Buka file **`supabase/setup-fresh-database.sql`** (sudah berisi: base schema + semua migration
+   dalam urutan benar + perbaikan `get_my_role()` + fitur kwitansi pembelian)
+3. Copy seluruh isi → paste → **Run**
+4. Buat user admin pertama via **Authentication → Users → Add user**
+   (setelah login, isi nama & role `admin` di tabel `profiles` via Table Editor)
+
+> Optional: jalankan `supabase/demo_data.sql` untuk data contoh.
+>
+> Jika database **sudah terpakai** (sudah ada tabel & data), cukup jalankan
+> `supabase/migration_kwitansi_pembelian.sql` saja untuk fitur kwitansi baru.
+
 ### 3. Run Dev Server (30 sec)
 ```bash
 npm run dev

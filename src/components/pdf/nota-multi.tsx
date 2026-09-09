@@ -226,6 +226,9 @@ function CheckBox({ checked }: { checked: boolean }) {
 }
 
 interface NotaMultiProps {
+  // Untuk mode 'pembelian': field sale dipakai sebagai data kwitansi pembelian
+  // (buyer_name = nama supplier, sell_price = total nilai pembelian).
+  mode?: 'penjualan' | 'pembelian'
   sale: {
     id: string
     invoice_number: string
@@ -263,6 +266,7 @@ const bonusOptions = ['Mouse', 'Keyboard', 'Tas', 'Mousepad']
 export function NotaMultiPDF({
   sale,
   items,
+  mode = 'penjualan',
   storeName = 'CENTRAL LAPTOP COMPUTER',
   storeAddress = '',
   storePhone = '0812-3456-7890',
@@ -270,9 +274,10 @@ export function NotaMultiPDF({
   bankAccountNumber = '1234567890',
   bankAccountHolder = 'Toko',
 }: NotaMultiProps) {
+  const isPembelian = mode === 'pembelian'
   const selectedBonus = sale.bonus || []
   const hasBonus = selectedBonus.length > 0 || sale.bonus_lainnya
-  const hasDP = (sale.dp_amount ?? 0) > 0
+  const hasDP = !isPembelian && (sale.dp_amount ?? 0) > 0
   const sisa = sale.sell_price - (sale.dp_amount ?? 0)
   const hasUnit = items.some(i => i.type === 'unit')
 
@@ -297,7 +302,7 @@ export function NotaMultiPDF({
               <Text style={styles.headerRightValue}>: {formatDate(sale.date)}</Text>
             </View>
             <View style={styles.headerRightRow}>
-              <Text style={styles.headerRightLabel}>Yth</Text>
+              <Text style={styles.headerRightLabel}>{isPembelian ? 'Supplier' : 'Yth'}</Text>
               <Text style={styles.headerRightValue}>: {sale.buyer_name}</Text>
             </View>
             <View style={styles.headerRightRow}>
@@ -320,24 +325,27 @@ export function NotaMultiPDF({
             <Text style={{ ...styles.tableHeaderText, flex: 1 }}>NAMA PRODUK</Text>
             <Text style={{ ...styles.tableHeaderText, width: 30, textAlign: 'center' }}>TIPE</Text>
             <Text style={{ ...styles.tableHeaderText, width: 24, textAlign: 'center' }}>QTY</Text>
-            <Text style={{ ...styles.tableHeaderText, width: 55, textAlign: 'right' }}>HARGA</Text>
+            <Text style={{ ...styles.tableHeaderText, width: 55, textAlign: 'right' }}>{isPembelian ? 'HARGA BELI' : 'HARGA'}</Text>
             <Text style={{ ...styles.tableHeaderText, width: 55, textAlign: 'right' }}>JUMLAH</Text>
           </View>
 
           {/* Item rows */}
-          {items.map((item, idx) => (
-            <View key={idx} style={styles.tableRow}>
-              <Text style={styles.colNo}>{idx + 1}</Text>
-              <View style={styles.colName}>
-                <Text>{item.name}</Text>
-                {item.specs && <Text style={{ fontSize: 5, color: '#666' }}>{item.specs}</Text>}
+          {items.map((item, idx) => {
+            const harga = isPembelian ? item.buy_price : item.sell_price
+            return (
+              <View key={idx} style={styles.tableRow}>
+                <Text style={styles.colNo}>{idx + 1}</Text>
+                <View style={styles.colName}>
+                  <Text>{item.name}</Text>
+                  {item.specs && <Text style={{ fontSize: 5, color: '#666' }}>{item.specs}</Text>}
+                </View>
+                <Text style={styles.colType}>{item.type === 'unit' ? 'Unit' : 'Sparepart'}</Text>
+                <Text style={styles.colQty}>{item.quantity}</Text>
+                <Text style={styles.colHarga}>{formatRupiah(harga)}</Text>
+                <Text style={styles.colJumlah}>{formatRupiah(harga * item.quantity)}</Text>
               </View>
-              <Text style={styles.colType}>{item.type === 'unit' ? 'Unit' : 'Sparepart'}</Text>
-              <Text style={styles.colQty}>{item.quantity}</Text>
-              <Text style={styles.colHarga}>{formatRupiah(item.sell_price)}</Text>
-              <Text style={styles.colJumlah}>{formatRupiah(item.sell_price * item.quantity)}</Text>
-            </View>
-          ))}
+            )
+          })}
 
           {/* Empty rows to fill space (minimum 3 rows total) */}
           {items.length < 3 && Array.from({ length: 3 - items.length }).map((_, idx) => (
@@ -356,7 +364,7 @@ export function NotaMultiPDF({
         <View style={styles.bottomSection}>
           {/* LEFT: Bonus + Catatan */}
           <View style={styles.leftSection}>
-            {hasUnit && (
+            {!isPembelian && hasUnit && (
               <View style={styles.bonusBox}>
                 <View style={styles.bonusHeader}>
                   <Text style={styles.bonusHeaderText}>BONUS</Text>
@@ -429,7 +437,9 @@ export function NotaMultiPDF({
 
         {/* PERHATIAN */}
         <View style={styles.perhatianBox}>
-          <Text style={styles.perhatianText}>PERHATIAN: Barang yang sudah dibeli tidak dapat dikembalikan atau ditukar.</Text>
+          <Text style={styles.perhatianText}>
+            {isPembelian ? 'PERHATIAN: Barang yang sudah dibeli tidak dapat ditukar atau dikembalikan' : 'PERHATIAN: Barang yang sudah dibeli tidak dapat dikembalikan atau ditukar.'}
+          </Text>
         </View>
 
         {/* REKENING */}
@@ -445,11 +455,11 @@ export function NotaMultiPDF({
         <View style={styles.ttdContainer}>
           <View style={styles.ttdBox}>
             <View style={styles.ttdLine} />
-            <Text style={styles.ttdLabel}>Pembeli</Text>
+            <Text style={styles.ttdLabel}>{isPembelian ? 'Diterima oleh' : 'Pembeli'}</Text>
           </View>
           <View style={styles.ttdBox}>
             <View style={styles.ttdLine} />
-            <Text style={styles.ttdLabel}>Penjual</Text>
+            <Text style={styles.ttdLabel}>{isPembelian ? 'Diserahkan oleh' : 'Penjual'}</Text>
           </View>
         </View>
       </Page>
