@@ -14,10 +14,7 @@ Sistem Kasir POS untuk toko laptop — kelola servis, unit laptop, sparepart, kw
 
 | Dashboard | Stok Barang | Laporan |
 |:---:|:---:|:---:|
-| `docs/screenshots/dashboard.png` | `docs/screenshots/stok.png` | `docs/screenshots/laporan.png` |
-| *(screenshot menyusul)* | *(screenshot menyusul)* | *(screenshot menyusul)* |
-
-> Cara mengisi screenshot: lihat [docs/screenshots/README.md](docs/screenshots/README.md).
+| ![Dashboard](docs/screenshots/dashboard.png) | ![Stok Barang](docs/screenshots/stok.png) | ![Laporan](docs/screenshots/laporan.png) |
 
 ---
 
