@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase, Product, StockMovement } from '@/lib/supabase'
 import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
-import { Search, ArrowDown, ArrowUp, ArrowDownUp, AlertTriangle, Plus, Package, X, Cpu, Wrench, Pencil, Trash2, ShoppingCart, ArrowDownToLine, Laptop, Clock, FileText } from 'lucide-react'
+import { Search, ArrowDown, ArrowUp, ArrowDownUp, AlertTriangle, Plus, Package, X, Cpu, Wrench, Pencil, Trash2, ShoppingCart, ArrowDownToLine, Laptop, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -146,12 +146,6 @@ export default function StokPage() {
               Beli Unit
             </Button>
           </Link>
-          <Link href="/stok/buat-kwitansi">
-            <Button className="gap-1.5 h-9 sm:h-10 text-xs sm:text-sm">
-              <FileText size={14} strokeWidth={2} />
-              Buat Kwitansi Pembelian
-            </Button>
-          </Link>
           <Link href="/unit-laptop/jual">
             <Button variant="secondary" className="gap-1.5 h-9 sm:h-10 text-xs sm:text-sm">
               <ShoppingCart size={14} strokeWidth={2} />
@@ -161,11 +155,6 @@ export default function StokPage() {
           <Link href="/stok/riwayat-pembelian">
             <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" title="Riwayat Pembelian">
               <Clock size={16} />
-            </Button>
-          </Link>
-          <Link href="/stok/riwayat-kwitansi">
-            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground" title="Riwayat Kwitansi Pembelian">
-              <FileText size={16} />
             </Button>
           </Link>
           <Button variant="ghost" size="icon" onClick={() => setShowAddCategoryForm(true)} className="h-9 w-9 text-muted-foreground" title="Tambah Kategori">

@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import {
-  LayoutDashboard, Wrench, Laptop, Package, Receipt,
+  LayoutDashboard, Wrench, Laptop, Package, Receipt, FileText,
   BarChart3, Users, LogOut, Menu, X, ShoppingCart, Contact,
 } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -21,6 +21,7 @@ const getNavItems = (role: string) => {
   ]
   const admin = [
     { href: '/riwayat-penjualan', label: 'Riwayat Penjualan', icon: ShoppingCart, roles: ['admin'] },
+    { href: '/kwitansi',    label: 'Kwitansi',    icon: FileText,  roles: ['admin'] },
     { href: '/operasional', label: 'Operasional', icon: Receipt,  roles: ['admin'] },
     { href: '/laporan',     label: 'Laporan',     icon: BarChart3,roles: ['admin'] },
     { href: '/pengaturan',  label: 'Pengaturan',  icon: Users,    roles: ['admin'] },

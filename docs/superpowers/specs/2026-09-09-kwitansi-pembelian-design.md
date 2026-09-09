@@ -45,11 +45,10 @@ bulan/zona waktu). Item sparepart dari kwitansi otomatis muncul di Riwayat Pembe
 - `stock_movements.reference_type` + nilai `'pembelian_kwitansi'`.
 
 ## Halaman
-- `/stok/buat-kwitansi` — form multi-item (tipe Sparepart/Unit, kondisi, IMEI/SN,
+- `/kwitansi/buat` — form multi-item (tipe Sparepart/Unit, kondisi, IMEI/SN,
   qty, harga beli/jual), layar sukses + download PDF.
-- `/stok/riwayat-kwitansi` — list + detail + download PDF + batalkan (rollback).
-- Tombol "Buat Kwitansi Pembelian" di header `/stok`, link riwayat di `/stok`
-  dan `/stok/riwayat-pembelian`.
+- `/kwitansi` — riwayat: list + detail + download PDF + batalkan (rollback).
+- Menu sidebar "Kwitansi" (admin), link riwayat di `/stok/riwayat-pembelian`.
 
 ## PDF
 `NotaMultiPDF` mendapat prop `mode: 'penjualan' | 'pembelian'` (default penjualan —

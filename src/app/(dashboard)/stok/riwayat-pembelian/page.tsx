@@ -95,7 +95,7 @@ export default function RiwayatPembelianPage() {
   return (
     <div className="space-y-3 sm:space-y-4">
       <PageHeader title="Riwayat Pembelian" subtitle="Daftar pembelian sparepart dari supplier">
-        <Link href="/stok/riwayat-kwitansi">
+        <Link href="/kwitansi">
           <Button variant="ghost" className="gap-1.5 h-10 text-xs sm:text-sm text-muted-foreground">
             <FileText size={14} />
             Riwayat Kwitansi

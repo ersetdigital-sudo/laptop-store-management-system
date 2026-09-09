@@ -347,7 +347,7 @@ export default function BuatKwitansiPage() {
             </div>
             <div className="flex gap-2 justify-center">
               <Button onClick={() => { setSaved(null); setItems([newItem()]); setForm(f => ({ ...f, supplier_name: '', supplier_phone: '', notes: '' })) }} variant="secondary">Buat Lagi</Button>
-              <Button onClick={() => router.push('/stok/riwayat-kwitansi')} variant="outline">Lihat Riwayat</Button>
+              <Button onClick={() => router.push('/kwitansi')} variant="outline">Lihat Riwayat</Button>
             </div>
           </CardContent>
         </Card>

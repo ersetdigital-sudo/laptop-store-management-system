@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
+import Link from 'next/link'
 import { supabase, SupplierReceipt, SupplierReceiptItem } from '@/lib/supabase'
-import { Search, FileText, Eye, Download, XCircle, ChevronLeft, ChevronRight, Package, User, DollarSign } from 'lucide-react'
+import { Search, FileText, Plus, Eye, Download, XCircle, ChevronLeft, ChevronRight, Package, User, DollarSign } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -172,6 +173,12 @@ export default function RiwayatKwitansiPage() {
   return (
     <div className="space-y-3 sm:space-y-4">
       <PageHeader title="Riwayat Kwitansi Pembelian" subtitle="Daftar kwitansi pembelian dari supplier">
+        <Link href="/kwitansi/buat">
+          <Button className="gap-1.5 h-10 text-xs sm:text-sm">
+            <Plus size={14} strokeWidth={2} />
+            Buat Kwitansi Pembelian
+          </Button>
+        </Link>
         <div className="flex gap-2 w-full sm:w-auto">
           <select
             value={month}
