@@ -4,7 +4,7 @@
 
 ### 1. Install Dependencies (2 min)
 ```bash
-cd "c:\Users\chemz\Downloads\Pembukuan OOS\poskarisv2"
+cd poskarisv2
 npm install
 ```
 
