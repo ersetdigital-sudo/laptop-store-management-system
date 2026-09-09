@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { supabase, SupplierReceipt, SupplierReceiptItem } from '@/lib/supabase'
-import { Search, FileText, Plus, Eye, Download, XCircle, ChevronLeft, ChevronRight, Package, User, DollarSign } from 'lucide-react'
+import { Search, FileText, Plus, Eye, Download, XCircle, Trash2, ChevronLeft, ChevronRight, Package, User, DollarSign } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -28,6 +28,8 @@ export default function RiwayatKwitansiPage() {
   const [detailReceipt, setDetailReceipt] = useState<ReceiptWithItems | null>(null)
   const [cancelConfirm, setCancelConfirm] = useState<ReceiptWithItems | null>(null)
   const [cancelling, setCancelling] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState<ReceiptWithItems | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const [pdfLoading, setPdfLoading] = useState<string | null>(null)
   const [storeInfo, setStoreInfo] = useState({ storeName: 'Kasir POS', storeAddress: '', storePhone: '' })
   const [bankInfo, setBankInfo] = useState({ bankName: '', bankAccountNumber: '', bankAccountHolder: '' })
@@ -99,6 +101,39 @@ export default function RiwayatKwitansiPage() {
       console.error(e)
       showToast('Gagal membatalkan: ' + (e instanceof Error ? e.message : 'Unknown error'), 'error')
     } finally { setCancelling(false) }
+  }
+
+  // Hapus kwitansi: rollback stok & pengeluaran (jika masih selesai), lalu hapus record permanen
+  async function handleDelete(receipt: ReceiptWithItems) {
+    setDeleting(true)
+    try {
+      // Rollback stok & pengeluaran hanya jika kwitansi masih berstatus selesai
+      if (receipt.status === 'selesai') {
+        const items = receipt.supplier_receipt_items || []
+        // 1. Rollback stok — trigger DB hanya berjalan saat INSERT, jadi kurangi manual
+        for (const item of items) {
+          if (!item.product_id) continue
+          const { data: product } = await supabase.from('products').select('quantity').eq('id', item.product_id).single()
+          if (product) {
+            await supabase.from('products').update({ quantity: Math.max(0, (product.quantity || 0) - item.quantity) }).eq('id', item.product_id)
+          }
+        }
+        // 2. Hapus mutasi stok & pengeluaran terkait (sparepart_purchases & purchases)
+        await supabase.from('stock_movements').delete().eq('reference_id', receipt.id).eq('reference_type', 'pembelian_kwitansi')
+        await supabase.from('sparepart_purchases').delete().eq('receipt_id', receipt.id)
+        await supabase.from('purchases').delete().eq('receipt_id', receipt.id)
+      }
+
+      // 3. Hapus kwitansi (item otomatis terhapus via ON DELETE CASCADE)
+      await supabase.from('supplier_receipts').delete().eq('id', receipt.id)
+
+      setDeleteConfirm(null)
+      showToast(`Kwitansi ${receipt.receipt_number} berhasil dihapus`, 'success')
+      fetchReceipts()
+    } catch (e) {
+      console.error(e)
+      showToast('Gagal menghapus: ' + (e instanceof Error ? e.message : 'Unknown error'), 'error')
+    } finally { setDeleting(false) }
   }
 
   const formatRupiah = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
@@ -234,8 +269,17 @@ export default function RiwayatKwitansiPage() {
         ) : paginated.map(r => (
           <div key={r.id} onClick={() => setDetailReceipt(r)} className="p-3 space-y-2 cursor-pointer hover:bg-secondary/30 transition-colors">
             <div className="flex items-center justify-between">
-              <p className="text-sm font-semibold text-ink font-mono">{r.receipt_number}</p>
-              <Badge variant={r.status === 'selesai' ? 'success' : 'destructive'} className="text-[10px] px-2 py-0.5 capitalize">{r.status}</Badge>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold text-ink font-mono">{r.receipt_number}</p>
+                <Badge variant={r.status === 'selesai' ? 'success' : 'destructive'} className="text-[10px] px-2 py-0.5 capitalize">{r.status}</Badge>
+              </div>
+              <button
+                onClick={(e) => { e.stopPropagation(); setDeleteConfirm(r) }}
+                className="h-6 w-6 flex items-center justify-center rounded text-destructive hover:bg-destructive/10"
+                title="Hapus Kwitansi"
+              >
+                <Trash2 size={12} />
+              </button>
             </div>
             <p className="text-xs text-muted-foreground truncate">Supplier: {r.supplier_name}</p>
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
@@ -291,6 +335,9 @@ export default function RiwayatKwitansiPage() {
                         <XCircle size={15} />
                       </button>
                     )}
+                    <button onClick={() => setDeleteConfirm(r)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Hapus Kwitansi">
+                      <Trash2 size={15} />
+                    </button>
                   </div>
                 </td>
               </tr>
@@ -399,6 +446,10 @@ export default function RiwayatKwitansiPage() {
                   Batalkan Kwitansi
                 </Button>
               )}
+              <Button onClick={() => { setDeleteConfirm(detailReceipt); setDetailReceipt(null) }} variant="destructive" className="flex-1 gap-2">
+                <Trash2 size={14} />
+                Hapus
+              </Button>
               <Button onClick={() => setDetailReceipt(null)} variant="secondary" className="flex-1">Tutup</Button>
             </div>
           </div>
@@ -425,6 +476,30 @@ export default function RiwayatKwitansiPage() {
         loading={cancelling}
         onConfirm={() => cancelConfirm && handleCancel(cancelConfirm)}
         onCancel={() => setCancelConfirm(null)}
+      />
+
+      {/* Hapus Confirmation */}
+      <AlertDialog
+        open={!!deleteConfirm}
+        title="Hapus Kwitansi"
+        description={
+          <>
+            Yakin ingin menghapus kwitansi{' '}
+            <span className="font-semibold text-foreground">{deleteConfirm?.receipt_number}</span>{' '}
+            dari supplier <span className="font-semibold text-foreground">{deleteConfirm?.supplier_name}</span>?
+            {deleteConfirm?.status === 'selesai' && (
+              <span className="mt-2 block text-xs text-destructive">
+                Stok dari {(deleteConfirm.supplier_receipt_items || []).length} item akan dikurangi kembali
+                dan pengeluaran sebesar {formatRupiah(deleteConfirm.total || 0)} dibatalkan dari perhitungan laba.
+              </span>
+            )}
+            <span className="mt-2 block text-xs text-destructive">Data kwitansi akan dihapus permanen dan tidak dapat dikembalikan.</span>
+          </>
+        }
+        confirmLabel={deleting ? 'Menghapus...' : 'Ya, Hapus'}
+        loading={deleting}
+        onConfirm={() => deleteConfirm && handleDelete(deleteConfirm)}
+        onCancel={() => setDeleteConfirm(null)}
       />
     </div>
   )
