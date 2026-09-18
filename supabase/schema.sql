@@ -375,7 +375,10 @@ CREATE TRIGGER trigger_stock_movement
 -- 12. VIEW: LAPORAN BULANAN
 -- ============================================
 
-CREATE VIEW public.monthly_report AS
+-- security_invoker: view mengikuti RLS milik pemanggil, sehingga anon tidak bisa
+-- membaca omzet & margin tanpa login (RLS tidak berlaku otomatis pada view)
+CREATE VIEW public.monthly_report
+WITH (security_invoker = true) AS
 SELECT
   EXTRACT(YEAR FROM s.date)::INTEGER AS year,
   EXTRACT(MONTH FROM s.date)::INTEGER AS month,
