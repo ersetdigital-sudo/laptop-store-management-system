@@ -147,10 +147,11 @@ export default function JualBarangPage() {
   // Add to cart
   function addToCart() {
     if (!selectedProduct) return
-    if (addQty < 1) return
     const maxQty = tab === 'unit' ? 1 : selectedProduct.quantity
-    const qty = Math.min(addQty, maxQty)
-    const price = isPriceEditable ? customPrice : selectedProduct.sell_price
+    // Unit laptop selalu 1 barang (tidak ada input qty), sparepart pakai input qty
+    const qty = tab === 'unit' ? 1 : Math.min(addQty, maxQty)
+    if (qty < 1) return
+    const price = customPrice
 
     // Check if product already in cart
     const existing = cart.find(c => c.product.id === selectedProduct.id)
@@ -448,11 +449,14 @@ export default function JualBarangPage() {
                           </div>
                         ) : (
                           <div className="relative">
-                            <input type="text" value={formatRupiah(selectedProduct.sell_price)} readOnly className="h-9 w-full rounded-lg border border-input bg-muted px-3 pr-8 text-sm font-mono cursor-default" />
-                            <button type="button" onClick={() => { setIsPriceEditable(true); setCustomPrice(selectedProduct.sell_price) }} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                            <input type="text" value={formatRupiah(customPrice)} readOnly className="h-9 w-full rounded-lg border border-input bg-muted px-3 pr-8 text-sm font-mono cursor-default" />
+                            <button type="button" onClick={() => setIsPriceEditable(true)} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                               <Pencil size={12} />
                             </button>
                           </div>
+                        )}
+                        {!isPriceEditable && customPrice !== selectedProduct.sell_price && (
+                          <p className="mt-1 text-[10px] text-muted-foreground">Harga asal: {formatRupiah(selectedProduct.sell_price)}</p>
                         )}
                       </div>
                       <Button type="button" onClick={addToCart} className="h-9 gap-1.5">
