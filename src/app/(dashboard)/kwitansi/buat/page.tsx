@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { RupiahInput } from '@/components/ui/rupiah-input'
 import { ProductAutocomplete } from '@/components/ui/product-autocomplete'
+import { SupplierAutocomplete } from '@/components/ui/supplier-autocomplete'
 import type { Product } from '@/lib/supabase'
 import { NotaMultiPDF } from '@/components/pdf/nota-multi'
 import { downloadPDF } from '@/components/pdf/utils'
@@ -380,17 +381,16 @@ export default function BuatKwitansiPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Data Supplier */}
-              <div className="rounded-lg border border-border bg-secondary/30 p-4">
+              <div className="rounded-xl border border-border bg-gradient-to-br from-secondary/40 to-secondary/10 p-4">
                 <h3 className="mb-3 text-sm font-bold text-foreground">Data Supplier</h3>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  <div>
-                    <label className={labelClass}>Nama Supplier *</label>
-                    <Input type="text" required value={form.supplier_name} onChange={e => setForm({ ...form, supplier_name: e.target.value })} placeholder="PT Maju Jaya Komputer" className="h-10 w-full" />
-                  </div>
-                  <div>
-                    <label className={labelClass}>No. HP Supplier</label>
-                    <Input type="text" value={form.supplier_phone} onChange={e => setForm({ ...form, supplier_phone: e.target.value })} className="h-10 w-full" />
-                  </div>
+                <SupplierAutocomplete
+                  nama={form.supplier_name}
+                  phone={form.supplier_phone}
+                  onNamaChange={val => setForm({ ...form, supplier_name: val })}
+                  onPhoneChange={val => setForm({ ...form, supplier_phone: val })}
+                  onSupplierSelect={s => setForm(f => ({ ...f, supplier_name: s.supplier_name, supplier_phone: s.supplier_phone || '' }))}
+                />
+                <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className={labelClass}>Tanggal Pembelian</label>
                     <Input type="date" value={form.purchase_date} onChange={e => setForm({ ...form, purchase_date: e.target.value })} className="h-10 w-full" />
