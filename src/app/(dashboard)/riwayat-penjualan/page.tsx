@@ -189,33 +189,35 @@ export default function RiwayatPenjualanPage() {
       <PageHeader title="Riwayat Penjualan" subtitle="Semua transaksi penjualan unit laptop dan sparepart" />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="space-y-3 lg:grid lg:grid-cols-4 lg:gap-3 lg:space-y-0">
         <StatCard
           title="Total Penjualan"
           value={formatRupiah(totalPenjualan)}
           icon={DollarSign}
           color="primary"
         />
-        <StatCard
-          title="Total Transaksi"
-          value={String(totalTransaksi)}
-          icon={ShoppingCart}
-          color="sky"
-        />
-        <StatCard
-          title="Unit Laptop"
-          value={`${totalUnit} unit`}
-          sub={formatRupiah(totalUnitRp)}
-          icon={Laptop}
-          color="emerald"
-        />
-        <StatCard
-          title="Sparepart"
-          value={`${totalSparepart} item`}
-          sub={formatRupiah(totalSparepartRp)}
-          icon={Package}
-          color="orange"
-        />
+        <div className="grid grid-cols-3 gap-3 lg:contents">
+          <StatCard
+            title="Total Transaksi"
+            value={String(totalTransaksi)}
+            icon={ShoppingCart}
+            color="sky"
+          />
+          <StatCard
+            title="Unit Laptop"
+            value={`${totalUnit} unit`}
+            sub={formatRupiah(totalUnitRp)}
+            icon={Laptop}
+            color="emerald"
+          />
+          <StatCard
+            title="Sparepart"
+            value={`${totalSparepart} item`}
+            sub={formatRupiah(totalSparepartRp)}
+            icon={Package}
+            color="orange"
+          />
+        </div>
       </div>
 
       {/* Filters */}

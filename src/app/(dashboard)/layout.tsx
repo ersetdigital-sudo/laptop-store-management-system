@@ -215,7 +215,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobile bottom navigation */}
       <nav className="mobile-bottom-nav">
-        {navItems.slice(0, 5).map((item) => {
+        {navItems.filter(i => ['/', '/unit-laptop/jual', '/servis', '/stok', '/laporan'].includes(i.href)).map((item) => {
           const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
           return (
             <Link
