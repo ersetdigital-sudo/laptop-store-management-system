@@ -1,7 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Fall back to a valid placeholder URL when no real Supabase credentials are
+// configured yet, so the app boots and renders. Auth/data calls will fail
+// until real credentials are supplied via the environment.
+const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseUrl = rawUrl && /^https?:\/\//.test(rawUrl) ? rawUrl : 'https://placeholder.supabase.co'
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key'
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 

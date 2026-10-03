@@ -1,0 +1,29 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/login",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_URL",
+      "description": "Supabase project URL (https://xxxxx.supabase.co) — Supabase Dashboard > Project Settings > API > Project URL",
+      "requiredAtBoot": true,
+      "generatedForDevelopment": true
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "description": "Supabase anon public key — Supabase Dashboard > Project Settings > API > Project API keys (anon public)",
+      "requiredAtBoot": true,
+      "generatedForDevelopment": true
+    },
+    {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "description": "Supabase service_role key (optional, enables user management) — Supabase Dashboard > Project Settings > API > Project API keys (service_role)",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "FONNTE_API_KEY",
+      "description": "Fonnte API key (optional, enables WhatsApp notifications) — from your Fonnte dashboard",
+      "requiredAtBoot": false
+    }
+  ]
+}
