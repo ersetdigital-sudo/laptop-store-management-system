@@ -236,13 +236,13 @@ export default function RiwayatKwitansiPage() {
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {summaryCards.map(card => (
           <div key={card.label} className="card-premium h-full p-4 sm:p-5 transition-transform duration-200 hover:-translate-y-0.5">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+            <div className="flex items-start gap-2.5 sm:gap-3">
               <div className={`grid h-9 w-9 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-xl ${card.iconBg}`}>
                 <card.icon size={18} className={card.iconColor} strokeWidth={2} />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
-                <p className={`mt-0.5 font-bold leading-tight ${card.financial ? 'text-base sm:text-lg lg:text-xl text-amber-600' : 'text-lg sm:text-xl lg:text-2xl text-ink'}`}>{card.value}</p>
+                <p className={`mt-0.5 font-bold leading-tight ${card.financial ? 'text-sm sm:text-lg lg:text-xl text-amber-600' : 'text-lg sm:text-xl lg:text-2xl text-ink'}`}>{card.value}</p>
                 <p className="mt-0.5 text-[11px] sm:text-xs text-muted-foreground">{card.subtext}</p>
               </div>
             </div>
