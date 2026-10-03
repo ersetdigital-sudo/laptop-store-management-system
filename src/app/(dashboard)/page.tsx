@@ -266,7 +266,7 @@ export default function DashboardPage() {
               value={loading ? '...' : formatRupiah(stats.totalProfit)}
               sub={loading ? 'Memuat...' : stats.totalOmzet > 0 ? `${((stats.totalProfit / stats.totalOmzet) * 100).toFixed(1)}% margin` : 'Belum ada penjualan'}
               icon={TrendingUp}
-              color={stats.totalProfit >= 0 ? 'success' : 'danger'}
+              color="neutral"
             />
           </>
         )}

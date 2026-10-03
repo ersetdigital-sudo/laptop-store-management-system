@@ -6,7 +6,7 @@ interface StatCardProps {
   value: string
   sub?: string
   icon: LucideIcon
-  color?: 'navy' | 'honey' | 'success' | 'danger'
+  color?: 'navy' | 'honey' | 'neutral'
   valueClass?: string
   className?: string
 }
@@ -14,15 +14,13 @@ interface StatCardProps {
 const ICON_STYLES: Record<string, { bg: string; color: string }> = {
   navy: { bg: '#EEF0F8', color: '#04123F' },
   honey: { bg: '#FEF9C3', color: '#B45309' },
-  success: { bg: '#ECFDF5', color: '#059669' },
-  danger: { bg: '#FEF2F2', color: '#DC2626' },
+  neutral: { bg: '#F1F3F7', color: '#6B7280' },
 }
 
 const SUB_COLOR: Record<string, string> = {
   navy: '#6B7280',
   honey: '#6B7280',
-  success: '#059669',
-  danger: '#DC2626',
+  neutral: '#6B7280',
 }
 
 export default function StatCard({
