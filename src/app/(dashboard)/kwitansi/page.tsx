@@ -197,7 +197,11 @@ export default function RiwayatKwitansiPage() {
     return (
       <div className="space-y-4">
         <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
-        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="grid grid-cols-3 gap-2.5 lg:hidden">
+          {[...Array(3)].map((_, i) => <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted" />)}
+        </div>
+        <div className="h-16 animate-pulse rounded-2xl bg-muted lg:hidden" />
+        <div className="hidden gap-4 lg:grid lg:grid-cols-4">
           {[...Array(4)].map((_, i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />)}
         </div>
         <div className="h-64 animate-pulse rounded-2xl bg-muted" />
@@ -232,18 +236,49 @@ export default function RiwayatKwitansiPage() {
         </div>
       </PageHeader>
 
-      {/* Summary Cards — Modern Premium */}
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {summaryCards.map(card => (
-          <div key={card.label} className="card-premium h-full p-4 sm:p-5 transition-transform duration-200 hover:-translate-y-0.5">
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <div className={`grid h-9 w-9 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-xl ${card.iconBg}`}>
+      {/* Summary Cards — Mobile: 3-col compact + full-width financial; Desktop: 4-col */}
+      {/* Mobile 3-column cards */}
+      <div className="grid grid-cols-3 gap-2.5 lg:hidden">
+        {summaryCards.slice(0, 3).map(card => (
+          <div key={card.label} className="card-premium p-3">
+            <div className={`mb-2 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${card.iconBg}`}>
+              <card.icon size={15} className={card.iconColor} strokeWidth={2} />
+            </div>
+            <p className="text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-tight truncate">{card.label}</p>
+            <p className="mt-0.5 font-bold leading-tight text-lg text-ink">{card.value}</p>
+            <p className="mt-0.5 text-[9px] text-muted-foreground leading-tight truncate">{card.subtext}</p>
+          </div>
+        ))}
+      </div>
+      {/* Mobile full-width financial card */}
+      <div className="lg:hidden">
+        {summaryCards.slice(3).map(card => (
+          <div key={card.label} className="card-premium p-4">
+            <div className="flex items-center gap-3">
+              <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${card.iconBg}`}>
                 <card.icon size={18} className={card.iconColor} strokeWidth={2} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
-                <p className={`mt-0.5 font-bold leading-tight ${card.financial ? 'text-sm sm:text-lg lg:text-xl text-amber-600' : 'text-lg sm:text-xl lg:text-2xl text-ink'}`}>{card.value}</p>
-                <p className="mt-0.5 text-[11px] sm:text-xs text-muted-foreground">{card.subtext}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
+                <p className="mt-0.5 font-bold leading-tight text-base text-amber-600">{card.value}</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">{card.subtext}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Desktop 4-column grid */}
+      <div className="hidden gap-4 lg:grid lg:grid-cols-4">
+        {summaryCards.map(card => (
+          <div key={card.label} className="card-premium h-full p-5 transition-transform duration-200 hover:-translate-y-0.5">
+            <div className="flex items-start gap-3">
+              <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${card.iconBg}`}>
+                <card.icon size={18} className={card.iconColor} strokeWidth={2} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
+                <p className={`mt-0.5 font-bold leading-tight ${card.financial ? 'text-xl text-amber-600' : 'text-2xl text-ink'}`}>{card.value}</p>
+                <p className="mt-0.5 text-xs text-muted-foreground">{card.subtext}</p>
               </div>
             </div>
           </div>
