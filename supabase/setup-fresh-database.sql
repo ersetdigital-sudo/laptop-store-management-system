@@ -139,6 +139,9 @@ ALTER TABLE public.stock_movements ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Authenticated users can view stock movements" ON public.stock_movements
   FOR SELECT USING (auth.role() = 'authenticated');
 
+CREATE POLICY "Authenticated users can delete stock movements" ON public.stock_movements
+  FOR DELETE USING (auth.role() = 'authenticated');
+
 CREATE POLICY "Authenticated users can create stock movements" ON public.stock_movements
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
@@ -236,6 +239,11 @@ ALTER TABLE public.purchases ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin can view purchases" ON public.purchases
   FOR SELECT USING (
+    public.is_admin()
+  );
+
+CREATE POLICY "Admin can delete purchases" ON public.purchases
+  FOR DELETE USING (
     public.is_admin()
   );
 
@@ -997,6 +1005,11 @@ CREATE POLICY "Admin can update supplier receipts" ON public.supplier_receipts
     public.is_admin()
   );
 
+CREATE POLICY "Admin can delete supplier receipts" ON public.supplier_receipts
+  FOR DELETE USING (
+    public.is_admin()
+  );
+
 CREATE POLICY "Admin can view supplier receipt items" ON public.supplier_receipt_items
   FOR SELECT USING (
     public.is_admin()
@@ -1004,6 +1017,11 @@ CREATE POLICY "Admin can view supplier receipt items" ON public.supplier_receipt
 
 CREATE POLICY "Admin can create supplier receipt items" ON public.supplier_receipt_items
   FOR INSERT WITH CHECK (
+    public.is_admin()
+  );
+
+CREATE POLICY "Admin can delete supplier receipt items" ON public.supplier_receipt_items
+  FOR DELETE USING (
     public.is_admin()
   );
 
