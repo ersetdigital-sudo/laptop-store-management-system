@@ -53,8 +53,26 @@ CREATE SEQUENCE IF NOT EXISTS kwitansi_seq START 1;
 
 CREATE OR REPLACE FUNCTION public.generate_kwitansi_number()
 RETURNS TRIGGER AS $$
+DECLARE
+  v_year text;
+  v_max int;
+  v_seq int;
 BEGIN
-  NEW.receipt_number := 'KW-' || EXTRACT(YEAR FROM NEW.purchase_date)::TEXT || '-' || LPAD(nextval('kwitansi_seq')::TEXT, 4, '0');
+  v_year := EXTRACT(YEAR FROM NEW.purchase_date)::TEXT;
+
+  -- Cari nomor kwitansi tertinggi untuk tahun ini
+  SELECT COALESCE(MAX(CAST(SPLIT_PART(receipt_number, '-', 3) AS INTEGER)), 0)
+    INTO v_max
+    FROM supplier_receipts
+   WHERE receipt_number LIKE 'KW-' || v_year || '-%';
+
+  -- Jika data lebih tinggi dari sequence, sync sequence (mencegah nomor duplikat)
+  SELECT last_value INTO v_seq FROM kwitansi_seq;
+  IF v_max > v_seq THEN
+    PERFORM setval('kwitansi_seq', v_max, true);
+  END IF;
+
+  NEW.receipt_number := 'KW-' || v_year || '-' || LPAD(nextval('kwitansi_seq')::TEXT, 4, '0');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
