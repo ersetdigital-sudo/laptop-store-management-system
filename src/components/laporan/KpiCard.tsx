@@ -6,11 +6,11 @@ import { useCountUp } from './useCountUp'
 import { resolveTrend } from '@/lib/trend'
 
 const TONES = {
-  emerald: { tile: 'bg-badge-success/15 text-badge-success', bar: 'from-badge-success' },
-  sky: { tile: 'bg-badge-info/15 text-badge-info', bar: 'from-badge-info' },
-  orange: { tile: 'bg-badge-warning/15 text-badge-warning', bar: 'from-badge-warning' },
-  danger: { tile: 'bg-danger/15 text-danger', bar: 'from-danger' },
-  primary: { tile: 'bg-primary/10 text-primary', bar: 'from-primary' },
+  emerald: { tile: 'bg-emerald-50 text-emerald-600', bar: 'from-emerald-500' },
+  sky: { tile: 'bg-sky-50 text-sky-600', bar: 'from-sky-500' },
+  orange: { tile: 'bg-orange-50 text-orange-600', bar: 'from-orange-500' },
+  danger: { tile: 'bg-red-50 text-red-600', bar: 'from-red-500' },
+  primary: { tile: 'bg-[#04123F] text-white', bar: 'from-[#04123F]' },
 } as const
 
 interface KpiCardProps {
@@ -53,9 +53,9 @@ export default function KpiCard({
       <div className={cn('pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r to-transparent', TONES[tone].bar)} />
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-ash">{title}</p>
-          <p className={cn('mt-1.5 truncate text-lg font-bold tabular-nums sm:text-xl lg:text-2xl', value < 0 ? 'text-danger' : 'text-ink')}>{display}</p>
-          {sub && <p className="mt-0.5 truncate text-[10px] font-medium text-muted-foreground">{sub}</p>}
+          <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">{title}</p>
+          <p className={cn('mt-1.5 break-words text-base font-bold tabular-nums sm:text-lg lg:text-xl', value < 0 ? 'text-red-600' : 'text-gray-900')}>{display}</p>
+          {sub && <p className="mt-0.5 truncate text-[10px] font-medium text-gray-400">{sub}</p>}
         </div>
         <div className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-transform duration-300 group-hover:scale-110', TONES[tone].tile)}>
           <Icon className="h-4 w-4" strokeWidth={2} />

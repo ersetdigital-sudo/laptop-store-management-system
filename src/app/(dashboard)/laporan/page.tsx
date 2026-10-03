@@ -181,8 +181,8 @@ export default function LaporanPage() {
   const tabClass = (active: boolean) =>
     `flex items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-xs sm:text-sm font-medium transition-all duration-200 ${
       active
-        ? 'bg-primary text-primary-foreground shadow-card'
-        : 'bg-card text-muted-foreground border border-border hover:bg-secondary/50 hover:text-foreground'
+        ? 'bg-[#04123F] text-white shadow-sm'
+        : 'bg-white text-gray-500 border border-hairline hover:bg-gray-50 hover:text-gray-900'
     }`
 
   if (loading) {
@@ -224,35 +224,35 @@ export default function LaporanPage() {
         </PageHeader>
       </Reveal>
 
-      {/* Hero mobile: Laba Bersih + segmented breakdown (ala analytics-dashboard) */}
+      {/* Hero mobile: Laba Bersih — Navy Premium */}
       <div className="lg:hidden">
-        <div className="overflow-hidden rounded-2xl border border-hairline bg-surface-card shadow-card">
-          <div className="bg-gradient-to-br from-primary/[0.07] to-transparent p-4">
+        <div className="overflow-hidden rounded-2xl bg-[#04123F] shadow-card">
+          <div className="p-4">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-ash">Laba Bersih</p>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-white/50">Laba Bersih</p>
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={prevMonth}
                   aria-label="Bulan sebelumnya"
-                  className="grid h-8 w-8 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground transition-colors hover:bg-secondary active:scale-95"
+                  className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/70 transition-colors hover:bg-white/20 active:scale-95"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
-                <span className="min-w-[96px] text-center text-xs font-semibold text-ink">{periodLabel}</span>
+                <span className="min-w-[96px] text-center text-xs font-semibold text-white">{periodLabel}</span>
                 <button
                   onClick={nextMonth}
                   disabled={isNextDisabled}
                   aria-label="Bulan berikutnya"
-                  className="grid h-8 w-8 place-items-center rounded-full border border-hairline bg-surface text-muted-foreground transition-colors hover:bg-secondary active:scale-95 disabled:pointer-events-none disabled:opacity-40"
+                  className="grid h-8 w-8 place-items-center rounded-full bg-white/10 text-white/70 transition-colors hover:bg-white/20 active:scale-95 disabled:pointer-events-none disabled:opacity-40"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>
               </div>
             </div>
-            <p className={`mt-2 text-2xl font-extrabold tabular-nums ${data.labaBersih >= 0 ? 'text-ink' : 'text-danger'}`}>
+            <p className={`mt-2 text-2xl font-extrabold tabular-nums ${data.labaBersih >= 0 ? 'text-[#FEC40B]' : 'text-red-400'}`}>
               {formatRupiah(data.labaBersih)}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-white/50">
               Omzet {formatRupiah(data.omzetServis + data.omzetPenjualan)} · {data.totalTransaksiServis + data.totalTransaksiUnit} transaksi
             </p>
             <div className="mt-4">
@@ -270,8 +270,8 @@ export default function LaporanPage() {
                   <div key={s.label} className="flex items-center gap-1.5">
                     <span className={`h-2 w-2 shrink-0 rounded-full ${s.color}`} />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-[10px] text-muted-foreground">{s.label}</p>
-                      <p className="truncate text-[11px] font-semibold tabular-nums text-ink">{formatRupiah(s.value)}</p>
+                      <p className="truncate text-[10px] text-white/50">{s.label}</p>
+                      <p className="truncate text-[11px] font-semibold tabular-nums text-white">{formatRupiah(s.value)}</p>
                     </div>
                   </div>
                 ))}
@@ -375,30 +375,30 @@ export default function LaporanPage() {
                 <div className="mt-3 hidden lg:block">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b border-hairline bg-secondary/30 text-left text-xs text-ash">
-                        <th className="px-4 py-2.5 font-medium">Produk</th>
-                        <th className="px-4 py-2.5 font-medium">Invoice</th>
-                        <th className="px-4 py-2.5 font-medium">Pembeli</th>
-                        <th className="px-4 py-2.5 font-medium text-right">Margin</th>
-                        <th className="px-4 py-2.5 font-medium">Status</th>
-                        <th className="px-4 py-2.5 font-medium whitespace-nowrap">Tanggal</th>
-                        <th className="px-4 py-2.5 font-medium text-center">Detail</th>
+                      <tr className="border-b border-hairline bg-[#04123F]/[0.02] text-left text-xs text-gray-500">
+                        <th className="px-4 py-3 font-semibold uppercase tracking-wide">Produk</th>
+                        <th className="px-4 py-3 font-semibold uppercase tracking-wide">Invoice</th>
+                        <th className="px-4 py-3 font-semibold uppercase tracking-wide">Pembeli</th>
+                        <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Margin</th>
+                        <th className="px-4 py-3 font-semibold uppercase tracking-wide">Status</th>
+                        <th className="px-4 py-3 font-semibold uppercase tracking-wide whitespace-nowrap">Tanggal</th>
+                        <th className="px-4 py-3 font-semibold uppercase tracking-wide text-center">Detail</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-hairline">
                       {sales.map((s) => (
-                        <tr key={s.id} className="transition-colors hover:bg-secondary/40">
+                        <tr key={s.id} className="transition-colors hover:bg-[#04123F]/[0.02]">
                           <td className="px-4 py-3">
-                            <span className="font-medium text-ink">{s.product_name || 'Produk'}</span>
+                            <span className="font-medium text-gray-900">{s.product_name || 'Produk'}</span>
                             <Badge variant={s.item_type === 'sparepart' ? 'success' : 'secondary'} className="ml-2 text-[10px]">{s.item_type === 'sparepart' ? 'Sparepart' : 'Unit'}</Badge>
                           </td>
-                          <td className="px-4 py-3 text-muted-foreground whitespace-nowrap">#{s.invoice_number}</td>
-                          <td className="px-4 py-3 text-muted-foreground">{s.buyer_name}</td>
-                          <td className={`px-4 py-3 text-right font-semibold ${s.margin >= 0 ? 'text-badge-success' : 'text-danger'}`}>{formatRupiah(s.margin)}</td>
+                          <td className="px-4 py-3 text-gray-500 whitespace-nowrap font-mono">#{s.invoice_number}</td>
+                          <td className="px-4 py-3 text-gray-700">{s.buyer_name}</td>
+                          <td className={`px-4 py-3 text-right font-semibold font-mono ${s.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatRupiah(s.margin)}</td>
                           <td className="px-4 py-3"><Badge variant={statusVariant(s.status)}>{s.status}</Badge></td>
-                          <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">{new Date(s.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                          <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{new Date(s.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                           <td className="px-4 py-3 text-center">
-                            <button onClick={() => setDetailSale(s)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-ink hover:bg-secondary/60 transition-colors">
+                            <button onClick={() => setDetailSale(s)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-colors">
                               <Eye size={15} />
                             </button>
                           </td>
@@ -512,28 +512,28 @@ export default function LaporanPage() {
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-hairline text-left text-xs text-ash">
-                          <th className="px-4 py-3 font-medium">Nota</th>
-                          <th className="px-4 py-3 font-medium">Customer</th>
-                          <th className="px-4 py-3 font-medium">Perangkat</th>
-                          <th className="px-4 py-3 font-medium text-right">Jasa</th>
-                          <th className="px-4 py-3 font-medium text-right">Sparepart</th>
-                          <th className="px-4 py-3 font-medium text-right">Total</th>
-                          <th className="px-4 py-3 font-medium">Status</th>
-                          <th className="px-4 py-3 font-medium">Tanggal</th>
+                        <tr className="border-b border-hairline bg-[#04123F]/[0.02] text-left text-xs text-gray-500">
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Nota</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Customer</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Perangkat</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Jasa</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Sparepart</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Total</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Status</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Tanggal</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-hairline">
                         {services.map((s) => (
-                          <tr key={s.id} className="transition-colors hover:bg-secondary/40">
-                            <td className="px-4 py-3 font-medium">#{s.nota_number}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{s.customer_name}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{s.device_brand ? `${s.device_brand} - ` : ''}{s.device_type}</td>
-                            <td className="px-4 py-3 text-right">{formatRupiah(s.service_fee)}</td>
-                            <td className="px-4 py-3 text-right">{formatRupiah(s.parts_fee)}</td>
-                            <td className="px-4 py-3 text-right font-semibold">{formatRupiah(s.total_fee)}</td>
+                          <tr key={s.id} className="transition-colors hover:bg-[#04123F]/[0.02]">
+                            <td className="px-4 py-3 font-medium font-mono text-gray-900">#{s.nota_number}</td>
+                            <td className="px-4 py-3 text-gray-700">{s.customer_name}</td>
+                            <td className="px-4 py-3 text-gray-500">{s.device_brand ? `${s.device_brand} - ` : ''}{s.device_type}</td>
+                            <td className="px-4 py-3 text-right font-mono text-gray-700">{formatRupiah(s.service_fee)}</td>
+                            <td className="px-4 py-3 text-right font-mono text-gray-700">{formatRupiah(s.parts_fee)}</td>
+                            <td className="px-4 py-3 text-right font-semibold font-mono text-gray-900">{formatRupiah(s.total_fee)}</td>
                             <td className="px-4 py-3"><Badge variant={statusVariant(s.status)}>{s.status}</Badge></td>
-                            <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(s.date_in).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                            <td className="px-4 py-3 text-xs text-gray-500">{new Date(s.date_in).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -583,26 +583,26 @@ export default function LaporanPage() {
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-hairline text-left text-xs text-ash">
-                          <th className="px-4 py-3 font-medium">Invoice</th>
-                          <th className="px-4 py-3 font-medium">Pembeli</th>
-                          <th className="px-4 py-3 font-medium text-right">Harga Beli</th>
-                          <th className="px-4 py-3 font-medium text-right">Harga Jual</th>
-                          <th className="px-4 py-3 font-medium text-right">Margin</th>
-                          <th className="px-4 py-3 font-medium">Status</th>
-                          <th className="px-4 py-3 font-medium">Tanggal</th>
+                        <tr className="border-b border-hairline bg-[#04123F]/[0.02] text-left text-xs text-gray-500">
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Invoice</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Pembeli</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Harga Beli</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Harga Jual</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Margin</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Status</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Tanggal</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-hairline">
                         {sales.map((s) => (
-                          <tr key={s.id} className="transition-colors hover:bg-secondary/40">
-                            <td className="px-4 py-3 font-medium">#{s.invoice_number}</td>
-                            <td className="px-4 py-3 text-muted-foreground">{s.buyer_name}</td>
-                            <td className="px-4 py-3 text-right text-muted-foreground">{formatRupiah(s.buy_price)}</td>
-                            <td className="px-4 py-3 text-right">{formatRupiah(s.sell_price)}</td>
-                            <td className={`px-4 py-3 text-right font-semibold ${s.margin >= 0 ? 'text-badge-success' : 'text-danger'}`}>{formatRupiah(s.margin)}</td>
+                          <tr key={s.id} className="transition-colors hover:bg-[#04123F]/[0.02]">
+                            <td className="px-4 py-3 font-medium font-mono text-gray-900">#{s.invoice_number}</td>
+                            <td className="px-4 py-3 text-gray-700">{s.buyer_name}</td>
+                            <td className="px-4 py-3 text-right font-mono text-gray-500">{formatRupiah(s.buy_price)}</td>
+                            <td className="px-4 py-3 text-right font-mono text-gray-700">{formatRupiah(s.sell_price)}</td>
+                            <td className={`px-4 py-3 text-right font-semibold font-mono ${s.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatRupiah(s.margin)}</td>
                             <td className="px-4 py-3"><Badge variant={statusVariant(s.status)}>{s.status}</Badge></td>
-                            <td className="px-4 py-3 text-xs text-muted-foreground">{new Date(s.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                            <td className="px-4 py-3 text-xs text-gray-500">{new Date(s.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -646,22 +646,22 @@ export default function LaporanPage() {
                   <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
-                        <tr className="border-b border-hairline text-left text-xs text-ash">
-                          <th className="px-4 py-3 font-medium">#</th>
-                          <th className="px-4 py-3 font-medium">Nama</th>
-                          <th className="px-4 py-3 font-medium text-right">Jumlah Transaksi</th>
-                          <th className="px-4 py-3 font-medium text-right">Total Belanja</th>
+                        <tr className="border-b border-hairline bg-[#04123F]/[0.02] text-left text-xs text-gray-500">
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">#</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide">Nama</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Jumlah Transaksi</th>
+                          <th className="px-4 py-3 font-semibold uppercase tracking-wide text-right">Total Belanja</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-hairline">
                         {topCustomers.map((c, i) => (
-                          <tr key={c.name} className="transition-colors hover:bg-secondary/40">
+                          <tr key={c.name} className="transition-colors hover:bg-[#04123F]/[0.02]">
                             <td className="px-4 py-3">
-                              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${i < 3 ? 'bg-badge-success/15 text-badge-success' : 'bg-secondary text-muted-foreground'}`}>{i + 1}</span>
+                              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold ${i < 3 ? 'bg-[#FEC40B]/20 text-[#04123F]' : 'bg-gray-100 text-gray-500'}`}>{i + 1}</span>
                             </td>
-                            <td className="px-4 py-3 font-medium">{c.name}</td>
-                            <td className="px-4 py-3 text-right text-muted-foreground">{c.count}×</td>
-                            <td className="px-4 py-3 text-right font-semibold">{formatRupiah(c.total)}</td>
+                            <td className="px-4 py-3 font-medium text-gray-900">{c.name}</td>
+                            <td className="px-4 py-3 text-right text-gray-500">{c.count}×</td>
+                            <td className="px-4 py-3 text-right font-semibold font-mono text-gray-900">{formatRupiah(c.total)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -674,60 +674,63 @@ export default function LaporanPage() {
         </Reveal>
       )}
 
-      {/* Detail Modal */}
+      {/* Detail Modal — Modern */}
       {detailSale && (
         <Modal title={`Detail Transaksi`} onClose={() => setDetailSale(null)} maxWidth="md">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">No. Invoice</p>
-                <p className="font-semibold text-foreground font-mono">#{detailSale.invoice_number}</p>
+            {/* Info Section */}
+            <div className="rounded-2xl border border-hairline bg-gray-50/50 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">No. Invoice</span>
+                <span className="text-xs font-semibold text-gray-900 font-mono">#{detailSale.invoice_number}</span>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tanggal</p>
-                <p className="font-semibold text-foreground">{new Date(detailSale.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Tanggal</span>
+                <span className="text-xs font-semibold text-gray-900">{new Date(detailSale.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tipe</p>
-                <Badge variant={detailSale.item_type === 'sparepart' ? 'success' : 'secondary'}>{detailSale.item_type === 'sparepart' ? 'Sparepart' : 'Unit'}</Badge>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Tipe</span>
+                <Badge variant={detailSale.item_type === 'sparepart' ? 'success' : 'secondary'} className="text-[10px]">{detailSale.item_type === 'sparepart' ? 'Sparepart' : 'Unit'}</Badge>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Status</p>
-                <Badge variant={statusVariant(detailSale.status)}>{detailSale.status}</Badge>
-              </div>
-            </div>
-
-            <div className="border-t border-border pt-3">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">Produk</p>
-              <p className="font-medium text-foreground">{detailSale.product_name || 'Produk'}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 border-t border-border pt-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Pembeli</p>
-                <p className="font-medium text-foreground">{detailSale.buyer_name}</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Quantity</p>
-                <p className="font-medium text-foreground">{detailSale.quantity}</p>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Status</span>
+                <Badge variant={statusVariant(detailSale.status)} className="text-[10px]">{detailSale.status}</Badge>
               </div>
             </div>
 
-            <div className="border-t border-border pt-3">
-              <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">Harga</p>
-              <div className="grid grid-cols-3 gap-3 text-sm">
-                <div>
-                  <p className="text-[10px] text-muted-foreground">Beli</p>
-                  <p className="font-medium text-foreground">{formatRupiah(detailSale.buy_price)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground">Jual</p>
-                  <p className="font-medium text-foreground">{formatRupiah(detailSale.sell_price)}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] text-muted-foreground">Margin</p>
-                  <p className={`font-bold ${detailSale.margin >= 0 ? 'text-badge-success' : 'text-danger'}`}>{formatRupiah(detailSale.margin)}</p>
-                </div>
+            {/* Product */}
+            <div>
+              <h4 className="mb-2 text-xs font-bold text-gray-900">Produk</h4>
+              <div className="rounded-xl border border-hairline bg-white p-3">
+                <p className="text-sm font-semibold text-gray-900">{detailSale.product_name || 'Produk'}</p>
+              </div>
+            </div>
+
+            {/* Buyer */}
+            <div className="rounded-2xl border border-hairline bg-gray-50/50 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Pembeli</span>
+                <span className="text-xs font-semibold text-gray-900">{detailSale.buyer_name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Quantity</span>
+                <span className="text-xs font-semibold text-gray-900">{detailSale.quantity}</span>
+              </div>
+            </div>
+
+            {/* Price breakdown — Navy + Gold */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="rounded-xl border border-hairline bg-white p-3 text-center">
+                <p className="text-[10px] text-gray-400 uppercase">Beli</p>
+                <p className="mt-1 text-xs font-semibold text-gray-900 font-mono break-words">{formatRupiah(detailSale.buy_price)}</p>
+              </div>
+              <div className="rounded-xl border border-hairline bg-white p-3 text-center">
+                <p className="text-[10px] text-gray-400 uppercase">Jual</p>
+                <p className="mt-1 text-xs font-semibold text-gray-900 font-mono break-words">{formatRupiah(detailSale.sell_price)}</p>
+              </div>
+              <div className="rounded-xl bg-[#04123F] p-3 text-center">
+                <p className="text-[10px] text-white/50 uppercase">Margin</p>
+                <p className={`mt-1 text-xs font-bold font-mono break-words ${detailSale.margin >= 0 ? 'text-[#FEC40B]' : 'text-red-400'}`}>{formatRupiah(detailSale.margin)}</p>
               </div>
             </div>
           </div>
@@ -751,22 +754,28 @@ export default function LaporanPage() {
         return (
           <Modal title={`Detail Harian — ${dayLabel}`} onClose={() => setDetailDay(null)} maxWidth="lg">
             <div className="space-y-4">
-              <div className="flex items-center justify-between rounded-lg bg-secondary/50 p-3">
-                <span className="text-sm text-muted-foreground">Profit Hari Ini</span>
-                <span className={`text-lg font-bold font-mono ${dayProfit >= 0 ? 'text-badge-success' : 'text-danger'}`}>{formatRupiah(dayProfit)}</span>
+              {/* Profit bar — Navy + Gold */}
+              <div className="flex items-center justify-between rounded-2xl bg-[#04123F] px-4 py-3">
+                <span className="text-xs font-medium text-white/70">Profit Hari Ini</span>
+                <span className={`text-lg font-bold font-mono ${dayProfit >= 0 ? 'text-[#FEC40B]' : 'text-red-400'}`}>{formatRupiah(dayProfit)}</span>
               </div>
 
               {dayServices.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">Servis ({dayServices.length})</p>
+                  <h4 className="mb-2 text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                    <Wrench size={14} className="text-gray-400" />
+                    Servis ({dayServices.length})
+                  </h4>
                   <div className="space-y-2">
                     {dayServices.map(s => (
-                      <div key={s.id} className="flex items-center justify-between rounded-lg border border-hairline p-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-ink truncate">{s.customer_name} — {s.device_type}</p>
-                          <p className="text-[11px] text-muted-foreground">#{s.nota_number}</p>
+                      <div key={s.id} className="rounded-xl border border-hairline bg-white p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{s.customer_name} — {s.device_type}</p>
+                            <p className="text-[11px] text-gray-400 font-mono">#{s.nota_number}</p>
+                          </div>
+                          <p className="shrink-0 pl-3 text-sm font-bold font-mono text-emerald-600">{formatRupiah(s.total_fee)}</p>
                         </div>
-                        <p className="shrink-0 pl-3 text-sm font-bold text-badge-success">{formatRupiah(s.total_fee)}</p>
                       </div>
                     ))}
                   </div>
@@ -775,17 +784,22 @@ export default function LaporanPage() {
 
               {daySales.length > 0 && (
                 <div>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground mb-2">Penjualan ({daySales.length})</p>
+                  <h4 className="mb-2 text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                    <ShoppingCart size={14} className="text-gray-400" />
+                    Penjualan ({daySales.length})
+                  </h4>
                   <div className="space-y-2">
                     {daySales.map(s => (
-                      <div key={s.id} className="flex items-center justify-between rounded-lg border border-hairline p-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-ink truncate">{s.product_name || 'Produk'} — {s.buyer_name}</p>
-                          <p className="text-[11px] text-muted-foreground">#{s.invoice_number}</p>
-                        </div>
-                        <div className="shrink-0 pl-3 text-right">
-                          <p className={`text-sm font-bold ${s.margin >= 0 ? 'text-badge-success' : 'text-danger'}`}>{formatRupiah(s.margin)}</p>
-                          <p className="text-[10px] text-muted-foreground">Beli {formatRupiah(s.buy_price)} · Jual {formatRupiah(s.sell_price)}</p>
+                      <div key={s.id} className="rounded-xl border border-hairline bg-white p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{s.product_name || 'Produk'} — {s.buyer_name}</p>
+                            <p className="text-[11px] text-gray-400 font-mono">#{s.invoice_number}</p>
+                          </div>
+                          <div className="shrink-0 pl-3 text-right">
+                            <p className={`text-sm font-bold font-mono ${s.margin >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>{formatRupiah(s.margin)}</p>
+                            <p className="text-[10px] text-gray-400">Beli {formatRupiah(s.buy_price)} · Jual {formatRupiah(s.sell_price)}</p>
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -794,7 +808,7 @@ export default function LaporanPage() {
               )}
 
               {dayServices.length === 0 && daySales.length === 0 && (
-                <p className="text-center text-sm text-muted-foreground">Tidak ada transaksi di hari ini</p>
+                <p className="text-center text-sm text-gray-400">Tidak ada transaksi di hari ini</p>
               )}
             </div>
           </Modal>

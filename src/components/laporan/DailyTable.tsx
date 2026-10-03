@@ -39,10 +39,10 @@ export default function DailyTable({ rows, onDayClick }: DailyTableProps) {
     { omzetServis: 0, omzetUnit: 0, marginUnit: 0, pembelianSparepart: 0, profit: 0, countServis: 0, countUnit: 0 },
   )
 
-  const profitClass = (v: number) => (v >= 0 ? 'text-badge-success' : 'text-danger')
+  const profitClass = (v: number) => (v >= 0 ? 'text-emerald-600' : 'text-red-600')
 
   return (
-    <div className="rounded-xl border border-hairline bg-surface-card shadow-card">
+    <div className="overflow-hidden rounded-2xl border border-hairline bg-white shadow-card">
       {/* Mobile Card View */}
       <div className="block divide-y divide-hairline lg:hidden">
         {rows.length === 0 ? (
@@ -89,15 +89,15 @@ export default function DailyTable({ rows, onDayClick }: DailyTableProps) {
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-hairline bg-secondary/30">
-              <th className="p-3 text-left text-xs font-medium uppercase text-ash">Tanggal</th>
-              <th className="p-3 text-right text-xs font-medium uppercase text-ash">Omzet Servis</th>
-              <th className="p-3 text-center text-xs font-medium uppercase text-ash">Servis</th>
-              <th className="p-3 text-right text-xs font-medium uppercase text-ash">Omzet Unit</th>
-              <th className="p-3 text-center text-xs font-medium uppercase text-ash">Unit</th>
-              <th className="p-3 text-right text-xs font-medium uppercase text-ash">Margin Unit</th>
-              <th className="p-3 text-right text-xs font-medium uppercase text-ash">Pembelian Sparepart</th>
-              <th className="p-3 text-right text-xs font-medium uppercase text-ash">Profit</th>
+            <tr className="border-b border-hairline bg-[#04123F]/[0.02]">
+              <th className="p-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal</th>
+              <th className="p-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Omzet Servis</th>
+              <th className="p-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">Servis</th>
+              <th className="p-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Omzet Unit</th>
+              <th className="p-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">Unit</th>
+              <th className="p-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Margin Unit</th>
+              <th className="p-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Pembelian Sparepart</th>
+              <th className="p-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Profit</th>
             </tr>
           </thead>
           <tbody>
@@ -106,16 +106,16 @@ export default function DailyTable({ rows, onDayClick }: DailyTableProps) {
                 <td colSpan={8} className="p-8 text-center text-xs text-stone">Belum ada data harian</td>
               </tr>
             ) : rows.map(d => (
-              <tr key={d.date} onClick={() => onDayClick?.(d.date)} className={`border-b border-hairline transition-colors ${onDayClick ? 'cursor-pointer hover:bg-secondary/30' : 'hover:bg-secondary/20'}`}>
-                <td className="p-3 text-xs font-medium text-ink">
+              <tr key={d.date} onClick={() => onDayClick?.(d.date)} className={`border-b border-hairline transition-colors ${onDayClick ? 'cursor-pointer hover:bg-[#04123F]/[0.02]' : 'hover:bg-[#04123F]/[0.01]'}`}>
+                <td className="p-3 text-xs font-medium text-gray-900">
                   {formatTanggal(d.date, { weekday: 'short', day: 'numeric', month: 'short' })}
                 </td>
-                <td className="p-3 text-right font-mono text-xs">{formatRupiah(d.omzetServis)}</td>
-                <td className="p-3 text-center text-xs">{d.countServis}</td>
-                <td className="p-3 text-right font-mono text-xs">{formatRupiah(d.omzetUnit)}</td>
-                <td className="p-3 text-center text-xs">{d.countUnit}</td>
-                <td className="p-3 text-right font-mono text-xs text-badge-success">{formatRupiah(d.marginUnit)}</td>
-                <td className="p-3 text-right font-mono text-xs text-danger">
+                <td className="p-3 text-right font-mono text-xs text-gray-700">{formatRupiah(d.omzetServis)}</td>
+                <td className="p-3 text-center text-xs text-gray-500">{d.countServis}</td>
+                <td className="p-3 text-right font-mono text-xs text-gray-700">{formatRupiah(d.omzetUnit)}</td>
+                <td className="p-3 text-center text-xs text-gray-500">{d.countUnit}</td>
+                <td className="p-3 text-right font-mono text-xs text-emerald-600">{formatRupiah(d.marginUnit)}</td>
+                <td className="p-3 text-right font-mono text-xs text-red-600">
                   {d.pembelianSparepart > 0 ? formatRupiah(d.pembelianSparepart) : '-'}
                 </td>
                 <td className={cn('p-3 text-right font-mono text-xs font-bold', profitClass(d.profit))}>
@@ -126,14 +126,14 @@ export default function DailyTable({ rows, onDayClick }: DailyTableProps) {
           </tbody>
           {rows.length > 0 && (
             <tfoot>
-              <tr className="border-t-2 border-hairline-strong bg-secondary/40">
-                <td className="p-3 text-xs font-bold uppercase text-ink">Total</td>
-                <td className="p-3 text-right font-mono text-xs font-bold text-ink">{formatRupiah(totals.omzetServis)}</td>
-                <td className="p-3 text-center text-xs font-bold text-ink">{totals.countServis}</td>
-                <td className="p-3 text-right font-mono text-xs font-bold text-ink">{formatRupiah(totals.omzetUnit)}</td>
-                <td className="p-3 text-center text-xs font-bold text-ink">{totals.countUnit}</td>
-                <td className="p-3 text-right font-mono text-xs font-bold text-badge-success">{formatRupiah(totals.marginUnit)}</td>
-                <td className="p-3 text-right font-mono text-xs font-bold text-danger">{formatRupiah(totals.pembelianSparepart)}</td>
+              <tr className="border-t-2 border-hairline-strong bg-[#04123F]/[0.03]">
+                <td className="p-3 text-xs font-bold uppercase text-gray-900">Total</td>
+                <td className="p-3 text-right font-mono text-xs font-bold text-gray-900">{formatRupiah(totals.omzetServis)}</td>
+                <td className="p-3 text-center text-xs font-bold text-gray-900">{totals.countServis}</td>
+                <td className="p-3 text-right font-mono text-xs font-bold text-gray-900">{formatRupiah(totals.omzetUnit)}</td>
+                <td className="p-3 text-center text-xs font-bold text-gray-900">{totals.countUnit}</td>
+                <td className="p-3 text-right font-mono text-xs font-bold text-emerald-600">{formatRupiah(totals.marginUnit)}</td>
+                <td className="p-3 text-right font-mono text-xs font-bold text-red-600">{formatRupiah(totals.pembelianSparepart)}</td>
                 <td className={cn('p-3 text-right font-mono text-sm font-bold', profitClass(totals.profit))}>
                   {formatRupiah(totals.profit)}
                 </td>
