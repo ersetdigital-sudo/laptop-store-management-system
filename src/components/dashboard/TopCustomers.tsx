@@ -1,4 +1,6 @@
-import { User } from 'lucide-react'
+'use client'
+
+import { Crown } from 'lucide-react'
 
 interface TopCustomersProps {
   items: Array<{
@@ -9,12 +11,28 @@ interface TopCustomersProps {
   limit?: number
 }
 
+const NAVY = '#04123F'
+const HONEY = '#FEC40B'
+
 export default function TopCustomers({ items, limit = 5 }: TopCustomersProps) {
   const displayItems = items.slice(0, limit)
+  const maxTotal = displayItems.length > 0 ? displayItems[0].total : 1
 
   const formatRupiah = (value: number) => {
     return `Rp ${value.toLocaleString('id-ID')}`
   }
+
+  const getInitials = (name: string) => {
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+    return name.slice(0, 2).toUpperCase()
+  }
+
+  const rankColors = [
+    { bg: HONEY, text: NAVY, icon: true },
+    { bg: '#E5E7EB', text: '#6B7280' },
+    { bg: '#F3E8D8', text: '#92700C' },
+  ]
 
   return (
     <div className="card-premium p-5 sm:p-6">
@@ -30,26 +48,47 @@ export default function TopCustomers({ items, limit = 5 }: TopCustomersProps) {
           <p className="text-sm text-[#9CA3AF]">Belum ada data customer</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {displayItems.map((item, index) => (
-            <div
-              key={index}
-              className="flex items-center justify-between gap-3 p-2.5 rounded-xl hover:bg-[#F8F9FC] transition-colors"
-            >
-              <div className="flex items-center gap-3 min-w-0 flex-1">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0" style={{ background: '#EEF0F8' }}>
-                  <User size={16} className="text-[#04123F]" strokeWidth={2} />
+        <div className="space-y-3">
+          {displayItems.map((item, index) => {
+            const rank = rankColors[index] || null
+            const pct = Math.max(8, Math.round((item.total / maxTotal) * 100))
+            return (
+              <div key={index} className="group">
+                <div className="flex items-center gap-3 mb-1.5">
+                  {/* Rank badge */}
+                  <div
+                    className="flex h-7 w-7 items-center justify-center rounded-lg flex-shrink-0 text-xs font-bold"
+                    style={rank ? { background: rank.bg, color: rank.text } : { background: '#F1F3F7', color: '#9CA3AF' }}
+                  >
+                    {rank?.icon ? <Crown size={14} /> : index + 1}
+                  </div>
+                  {/* Avatar with initials */}
+                  <div
+                    className="flex h-9 w-9 items-center justify-center rounded-full flex-shrink-0 text-xs font-bold"
+                    style={{ background: '#EEF0F8', color: NAVY }}
+                  >
+                    {getInitials(item.name)}
+                  </div>
+                  {/* Name + count */}
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold text-[#111827] truncate leading-tight">{item.name}</p>
+                    <p className="text-xs text-[#9CA3AF] mt-0.5">{item.count} transaksi</p>
+                  </div>
+                  {/* Total */}
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-sm font-bold text-[#111827] tabular-nums">{formatRupiah(item.total)}</p>
+                  </div>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-[#111827] truncate leading-tight">{item.name}</p>
-                  <p className="text-xs text-[#9CA3AF] mt-0.5">{item.count} transaksi</p>
+                {/* Progress bar */}
+                <div className="ml-10 h-1.5 rounded-full bg-[#F1F3F7] overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500"
+                    style={{ width: `${pct}%`, background: index === 0 ? HONEY : NAVY }}
+                  />
                 </div>
               </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-sm font-semibold text-[#111827] tabular-nums">{formatRupiah(item.total)}</p>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

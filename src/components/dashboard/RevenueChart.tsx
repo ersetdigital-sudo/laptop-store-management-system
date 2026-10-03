@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts'
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 interface RevenueChartProps {
   data: Array<{
@@ -16,7 +16,6 @@ interface RevenueChartProps {
 
 const NAVY = '#04123F'
 const HONEY = '#FEC40B'
-const LIGHT_GRAY = '#E5E7EB'
 
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
@@ -46,11 +45,13 @@ export default function RevenueChart({ data, title, subtitle, year }: RevenueCha
   }
 
   const hasData = data.some(d => d.omzet > 0 || d.profit > 0 || (d.biaya ?? 0) > 0)
+  const totalOmzet = data.reduce((sum, d) => sum + d.omzet, 0)
+  const totalProfit = data.reduce((sum, d) => sum + d.profit, 0)
 
   return (
     <div className="card-premium p-5 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-2">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-3">
         <div>
           <h3 className="text-base font-bold text-[#111827]" style={{ fontWeight: 700 }}>
             {title}{year ? ` ${year}` : ''}
@@ -59,28 +60,38 @@ export default function RevenueChart({ data, title, subtitle, year }: RevenueCha
             <p className="text-xs text-[#6B7280] mt-0.5">{subtitle}</p>
           )}
         </div>
-        {/* Legend */}
+        {/* Summary + Legend */}
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full" style={{ background: NAVY }} />
-            <span className="text-xs text-[#6B7280] font-medium">Omzet</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-2.5 w-2.5 rounded-full" style={{ background: HONEY }} />
-            <span className="text-xs text-[#6B7280] font-medium">Profit</span>
-          </div>
-          {data[0]?.biaya !== undefined && (
-            <div className="flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-full" style={{ background: '#D1D5DB' }} />
-              <span className="text-xs text-[#6B7280] font-medium">Biaya</span>
+          <div className="text-right">
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="h-2.5 w-2.5 rounded-full" style={{ background: NAVY }} />
+              <span className="text-xs text-[#6B7280] font-medium">Omzet</span>
             </div>
-          )}
+            <p className="text-sm font-bold text-[#111827] tabular-nums">Rp {totalOmzet.toLocaleString('id-ID')}</p>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center gap-1.5 mb-1">
+              <div className="h-2.5 w-2.5 rounded-full" style={{ background: HONEY }} />
+              <span className="text-xs text-[#6B7280] font-medium">Profit</span>
+            </div>
+            <p className="text-sm font-bold text-[#111827] tabular-nums">Rp {totalProfit.toLocaleString('id-ID')}</p>
+          </div>
         </div>
       </div>
 
       {hasData ? (
         <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={data} margin={{ top: 5, right: 0, left: -16, bottom: 5 }}>
+          <AreaChart data={data} margin={{ top: 10, right: 5, left: -16, bottom: 5 }}>
+            <defs>
+              <linearGradient id="grad-omzet" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={NAVY} stopOpacity={0.25} />
+                <stop offset="100%" stopColor={NAVY} stopOpacity={0.02} />
+              </linearGradient>
+              <linearGradient id="grad-profit" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={HONEY} stopOpacity={0.35} />
+                <stop offset="100%" stopColor={HONEY} stopOpacity={0.02} />
+              </linearGradient>
+            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="#F1F3F7" vertical={false} />
             <XAxis
               dataKey="name"
@@ -94,18 +105,29 @@ export default function RevenueChart({ data, title, subtitle, year }: RevenueCha
               axisLine={false}
               tickLine={false}
             />
-            <Tooltip content={<ChartTooltip />} cursor={{ fill: '#F8F9FC' }} />
-            <Bar dataKey="omzet" fill={NAVY} name="Omzet" radius={[6, 6, 0, 0]} maxBarSize={32} />
-            <Bar dataKey="profit" fill={HONEY} name="Profit" radius={[6, 6, 0, 0]} maxBarSize={32} />
-            {data[0]?.biaya !== undefined && (
-              <Bar dataKey="biaya" fill="#D1D5DB" name="Biaya" radius={[6, 6, 0, 0]} maxBarSize={32} />
-            )}
-          </BarChart>
+            <Tooltip content={<ChartTooltip />} cursor={{ stroke: '#E5E7EB', strokeWidth: 1 }} />
+            <Area
+              type="monotone"
+              dataKey="omzet"
+              stroke={NAVY}
+              strokeWidth={2.5}
+              fill="url(#grad-omzet)"
+              name="Omzet"
+            />
+            <Area
+              type="monotone"
+              dataKey="profit"
+              stroke={HONEY}
+              strokeWidth={2.5}
+              fill="url(#grad-profit)"
+              name="Profit"
+            />
+          </AreaChart>
         </ResponsiveContainer>
       ) : (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F1F3F7] mb-4">
-            <BarChart size={26} className="text-[#9CA3AF]" />
+            <AreaChart size={26} className="text-[#9CA3AF]" />
           </div>
           <p className="text-sm font-semibold text-[#111827] mb-1">Belum ada data transaksi</p>
           <p className="text-xs text-[#6B7280] max-w-[240px]">

@@ -1,5 +1,8 @@
+'use client'
+
+import { useState, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 interface Transaction {
@@ -18,8 +21,18 @@ interface RecentTransactionsProps {
   isAdmin?: boolean
 }
 
-export default function RecentTransactions({ items, limit = 5, isAdmin = true }: RecentTransactionsProps) {
+const PAGE_SIZE = 5
+
+export default function RecentTransactions({ items, limit = 20, isAdmin = true }: RecentTransactionsProps) {
+  const [page, setPage] = useState(1)
+
   const displayItems = items.slice(0, limit)
+  const totalPages = Math.max(1, Math.ceil(displayItems.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageItems = useMemo(
+    () => displayItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [displayItems, currentPage]
+  )
 
   const formatRupiah = (value: number) => {
     return `Rp ${value.toLocaleString('id-ID')}`
@@ -61,7 +74,7 @@ export default function RecentTransactions({ items, limit = 5, isAdmin = true }:
             Transaksi Terbaru
           </h3>
           <p className="text-xs text-[#6B7280] mt-0.5">
-            {limit} transaksi terakhir di periode ini
+            {displayItems.length} transaksi di periode ini
           </p>
         </div>
         <Link
@@ -82,57 +95,87 @@ export default function RecentTransactions({ items, limit = 5, isAdmin = true }:
           <p className="text-xs text-[#6B7280]">Transaksi akan muncul di sini setelah ada penjualan atau servis.</p>
         </div>
       ) : (
-        <div className="space-y-2">
-          {displayItems.map((item) => {
-            const typeStyle = getTypeStyle(item.type)
-            return (
-              <div
-                key={item.id}
-                className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F8F9FC] transition-all"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span
-                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                      style={{ background: typeStyle.bg, color: typeStyle.color }}
-                    >
-                      {getTypeLabel(item.type)}
-                    </span>
-                    {item.status && (
+        <>
+          <div className="space-y-2">
+            {pageItems.map((item) => {
+              const typeStyle = getTypeStyle(item.type)
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F8F9FC] transition-all"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ background: typeStyle.bg, color: typeStyle.color }}
+                      >
+                        {getTypeLabel(item.type)}
+                      </span>
+                      {item.status && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                          {item.status}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm font-semibold text-[#111827] truncate leading-tight">{item.title}</p>
+                    <p className="text-xs text-[#9CA3AF] mt-0.5 leading-tight">{item.subtitle}</p>
+                    <p className="text-[11px] text-[#9CA3AF] mt-0.5">{formatDate(item.date)}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    {isAdmin ? (
+                      <p className="text-sm font-semibold text-[#111827] tabular-nums">
+                        {formatRupiah(item.amount)}
+                      </p>
+                    ) : (
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                        {item.status}
+                        {item.status || 'Selesai'}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-sm font-semibold text-[#111827] truncate leading-tight">{item.title}</p>
-                  <p className="text-xs text-[#9CA3AF] mt-0.5 leading-tight">{item.subtitle}</p>
-                  <p className="text-[11px] text-[#9CA3AF] mt-0.5">{formatDate(item.date)}</p>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  {isAdmin ? (
-                    <p className="text-sm font-semibold text-[#111827] tabular-nums">
-                      {formatRupiah(item.amount)}
-                    </p>
-                  ) : (
-                    <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
-                      {item.status || 'Selesai'}
-                    </Badge>
-                  )}
-                </div>
+              )
+            })}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#F1F3F7]">
+              <p className="text-xs text-[#9CA3AF]">
+                Hal {currentPage} dari {totalPages}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F8F9FC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors"
+                    style={p === currentPage
+                      ? { background: '#04123F', color: '#fff' }
+                      : { color: '#6B7280' }}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F8F9FC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={16} />
+                </button>
               </div>
-            )
-          })}
-        </div>
+            </div>
+          )}
+        </>
       )}
     </div>
-  )
-}
-
-function Clock({ size, className }: { size: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 12 16" />
-    </svg>
   )
 }

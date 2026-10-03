@@ -265,7 +265,7 @@ export default function DashboardPage() {
       )}
 
       {/* Recent Transactions */}
-      <RecentTransactions items={recentTransactions} limit={8} isAdmin={isAdmin} />
+      <RecentTransactions items={recentTransactions} limit={20} isAdmin={isAdmin} />
     </div>
   )
 }
