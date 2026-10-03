@@ -196,31 +196,26 @@ export default function RiwayatPenjualanPage() {
           icon={DollarSign}
           color="primary"
         />
-        <div className="grid grid-cols-3 gap-3 lg:contents">
-          <StatCard
-            title="Total Transaksi"
-            value={String(totalTransaksi)}
-            icon={ShoppingCart}
-            color="sky"
-            compact
-          />
-          <StatCard
-            title="Unit Laptop"
-            value={`${totalUnit} unit`}
-            sub={formatRupiah(totalUnitRp)}
-            icon={Laptop}
-            color="emerald"
-            compact
-          />
-          <StatCard
-            title="Sparepart"
-            value={`${totalSparepart} item`}
-            sub={formatRupiah(totalSparepartRp)}
-            icon={Package}
-            color="orange"
-            compact
-          />
-        </div>
+        <StatCard
+          title="Total Transaksi"
+          value={String(totalTransaksi)}
+          icon={ShoppingCart}
+          color="sky"
+        />
+        <StatCard
+          title="Unit Laptop"
+          value={`${totalUnit} unit`}
+          sub={formatRupiah(totalUnitRp)}
+          icon={Laptop}
+          color="emerald"
+        />
+        <StatCard
+          title="Sparepart"
+          value={`${totalSparepart} item`}
+          sub={formatRupiah(totalSparepartRp)}
+          icon={Package}
+          color="orange"
+        />
       </div>
 
       {/* Filters */}
