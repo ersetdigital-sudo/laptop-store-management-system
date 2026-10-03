@@ -419,36 +419,75 @@ export default function RiwayatKwitansiPage() {
         </div>
       )}
 
-      {/* Detail Modal */}
+      {/* Detail Modal — Modern */}
       {detailReceipt && (
         <Modal title={`Detail Kwitansi ${detailReceipt.receipt_number}`} onClose={() => setDetailReceipt(null)} maxWidth="lg">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tanggal</p>
-                <p className="font-semibold text-foreground">{new Date(detailReceipt.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            {/* Info Section — Clean labeled rows */}
+            <div className="rounded-2xl border border-hairline bg-gray-50/50 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Tanggal</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900">{new Date(detailReceipt.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Status</p>
-                <Badge variant={detailReceipt.status === 'selesai' ? 'success' : 'destructive'} className="capitalize">{detailReceipt.status}</Badge>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <User size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Supplier</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-semibold text-gray-900">{detailReceipt.supplier_name}</span>
+                  {detailReceipt.supplier_phone && <p className="text-[10px] text-gray-400 font-mono">{detailReceipt.supplier_phone}</p>}
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Supplier</p>
-                <p className="font-semibold text-foreground">{detailReceipt.supplier_name}</p>
-                {detailReceipt.supplier_phone && <p className="text-xs text-muted-foreground">{detailReceipt.supplier_phone}</p>}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <DollarSign size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Metode Bayar</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900">{detailReceipt.payment_method}</span>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Metode Bayar</p>
-                <p className="font-semibold text-foreground">{detailReceipt.payment_method}</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Receipt size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Status</span>
+                </div>
+                <Badge variant={detailReceipt.status === 'selesai' ? 'success' : 'destructive'} className="text-[10px] capitalize">{detailReceipt.status}</Badge>
               </div>
             </div>
 
-            <div className="border-t border-border pt-3">
-              <h4 className="mb-2 text-xs font-bold text-foreground">Item Pembelian</h4>
-              <div className="overflow-x-auto rounded-lg border border-border">
+            {/* Items Section — Card list on mobile, table on desktop */}
+            <div>
+              <h4 className="mb-2.5 text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                <Package size={14} className="text-gray-400" />
+                Item Pembelian
+                <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">{(detailReceipt.supplier_receipt_items || []).length} item</span>
+              </h4>
+              {/* Mobile cards */}
+              <div className="space-y-2 lg:hidden">
+                {(detailReceipt.supplier_receipt_items || []).map((item, idx) => (
+                  <div key={item.id} className="rounded-xl border border-hairline bg-white p-3">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{item.item_name}</p>
+                        {item.specs && <p className="text-[10px] text-gray-400 truncate">{item.specs}</p>}
+                      </div>
+                      <Badge variant={item.item_type === 'unit' ? 'default' : 'secondary'} className="text-[9px] px-1.5 py-0 capitalize shrink-0">{item.item_type}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-gray-500">{item.quantity} × {formatRupiah(item.buy_price)}</span>
+                      <span className="font-mono font-semibold text-gray-900">{formatRupiah(item.subtotal)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto rounded-lg border border-hairline lg:block">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-secondary/30 text-left text-[10px] uppercase tracking-wide text-ash">
+                    <tr className="border-b border-hairline bg-gray-50 text-left text-[10px] uppercase tracking-wide text-gray-500">
                       <th className="px-3 py-2 font-medium">No</th>
                       <th className="px-3 py-2 font-medium">Nama Barang</th>
                       <th className="px-3 py-2 font-medium">Tipe</th>
@@ -460,53 +499,57 @@ export default function RiwayatKwitansiPage() {
                   <tbody className="divide-y divide-hairline">
                     {(detailReceipt.supplier_receipt_items || []).map((item, idx) => (
                       <tr key={item.id}>
-                        <td className="px-3 py-2 text-xs text-muted-foreground">{idx + 1}</td>
+                        <td className="px-3 py-2 text-xs text-gray-400">{idx + 1}</td>
                         <td className="px-3 py-2">
-                          <p className="text-xs font-medium text-foreground">{item.item_name}</p>
-                          {item.specs && <p className="text-[10px] text-muted-foreground">{item.specs}</p>}
+                          <p className="text-xs font-medium text-gray-900">{item.item_name}</p>
+                          {item.specs && <p className="text-[10px] text-gray-400">{item.specs}</p>}
                         </td>
                         <td className="px-3 py-2">
                           <Badge variant={item.item_type === 'unit' ? 'default' : 'secondary'} className="text-[9px] px-1.5 py-0 capitalize">{item.item_type}</Badge>
                         </td>
                         <td className="px-3 py-2 text-center text-xs">{item.quantity}</td>
-                        <td className="px-3 py-2 text-right text-xs font-mono">{formatRupiah(item.buy_price)}</td>
-                        <td className="px-3 py-2 text-right text-xs font-mono font-semibold">{formatRupiah(item.subtotal)}</td>
+                        <td className="px-3 py-2 text-right text-xs font-mono text-gray-600">{formatRupiah(item.buy_price)}</td>
+                        <td className="px-3 py-2 text-right text-xs font-mono font-semibold text-gray-900">{formatRupiah(item.subtotal)}</td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot>
-                    <tr className="border-t border-border bg-secondary/30">
-                      <td colSpan={5} className="px-3 py-2 text-right text-xs font-bold text-foreground">Total</td>
-                      <td className="px-3 py-2 text-right text-sm font-mono font-bold text-badge-warning">{formatRupiah(detailReceipt.total)}</td>
-                    </tr>
-                  </tfoot>
                 </table>
               </div>
             </div>
 
+            {/* Total — Prominent */}
+            <div className="flex items-center justify-between rounded-2xl bg-[#04123F] px-4 py-3">
+              <span className="text-xs font-medium text-white/70">Total Pembelian</span>
+              <span className="font-mono text-lg font-bold text-[#FEC40B]">{formatRupiah(detailReceipt.total)}</span>
+            </div>
+
+            {/* Notes */}
             {detailReceipt.notes && (
-              <div className="border-t border-border pt-3">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Catatan</p>
-                <p className="font-medium text-foreground">{detailReceipt.notes}</p>
+              <div className="rounded-xl border border-hairline bg-amber-50/50 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 mb-0.5">Catatan</p>
+                <p className="text-xs text-gray-700">{detailReceipt.notes}</p>
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-2 pt-2">
-              <Button onClick={() => handleDownloadPDF(detailReceipt)} disabled={pdfLoading === detailReceipt.id} variant="outline" className="flex-1 gap-2">
-                {pdfLoading === detailReceipt.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={14} />}
+            {/* Actions — Clean stacked on mobile */}
+            <div className="flex flex-col gap-2 pt-1">
+              <Button onClick={() => handleDownloadPDF(detailReceipt)} disabled={pdfLoading === detailReceipt.id} variant="outline" className="w-full gap-2 h-10">
+                {pdfLoading === detailReceipt.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={16} />}
                 Download PDF
               </Button>
-              {detailReceipt.status === 'selesai' && (
-                <Button onClick={() => { setCancelConfirm(detailReceipt); setDetailReceipt(null) }} variant="destructive" className="flex-1 gap-2">
-                  <XCircle size={14} />
-                  Batalkan Kwitansi
+              <div className="flex gap-2">
+                {detailReceipt.status === 'selesai' && (
+                  <Button onClick={() => { setCancelConfirm(detailReceipt); setDetailReceipt(null) }} variant="outline" className="flex-1 gap-1.5 h-10 border-amber-200 text-amber-700 hover:bg-amber-50">
+                    <XCircle size={15} />
+                    Batalkan
+                  </Button>
+                )}
+                <Button onClick={() => { setDeleteConfirm(detailReceipt); setDetailReceipt(null) }} variant="outline" className="flex-1 gap-1.5 h-10 border-red-200 text-red-600 hover:bg-red-50">
+                  <Trash2 size={15} />
+                  Hapus
                 </Button>
-              )}
-              <Button onClick={() => { setDeleteConfirm(detailReceipt); setDetailReceipt(null) }} variant="destructive" className="flex-1 gap-2">
-                <Trash2 size={14} />
-                Hapus
-              </Button>
-              <Button onClick={() => setDetailReceipt(null)} variant="secondary" className="flex-1">Tutup</Button>
+              </div>
+              <Button onClick={() => setDetailReceipt(null)} variant="secondary" className="w-full h-10">Tutup</Button>
             </div>
           </div>
         </Modal>
