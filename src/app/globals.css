@@ -253,6 +253,15 @@ table {
   .bg-light-gray { background-color: #F1F3F7; }
 }
 
+/* ── Hide scrollbar but keep scrollable ───────────── */
+.sidebar-panel nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sidebar-panel nav::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Mobile bottom navigation ─────────────────────── */
 .mobile-bottom-nav {
   display: none;
