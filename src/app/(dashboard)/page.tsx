@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { fetchFinanceData } from '@/lib/finance'
 import { supabase } from '@/lib/supabase'
-import { Wrench, TrendingUp, DollarSign, Banknote, Package, Contact, ShoppingBag, AlertTriangle } from 'lucide-react'
+import { Wrench, TrendingUp, DollarSign, Banknote, Package, Contact, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 
 import MonthPicker from '@/components/dashboard/MonthPicker'
@@ -244,13 +244,14 @@ export default function DashboardPage() {
       )}
 
       {/* KPI Cards */}
-      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
+      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2'}`}>
         <StatCard
           title="Total Servis"
           value={loading ? '...' : String(stats.totalServis)}
-          sub={loading ? 'Memuat...' : stats.totalServis > 0 ? `${stats.sparepartDigunakan} sparepart digunakan` : 'Belum ada servis'}
+          sub={loading ? 'Memuat...' : stats.totalServis > 0 ? `${stats.sparepartDigunakan} sparepart` : 'Belum ada servis'}
           icon={Wrench}
           color="navy"
+          dark={isAdmin}
         />
         {isAdmin && (
           <>
@@ -268,55 +269,16 @@ export default function DashboardPage() {
               icon={TrendingUp}
               color="neutral"
             />
+            <StatCard
+              title="Stok Menipis"
+              value={loading ? '...' : String(lowStockCount)}
+              sub={loading ? 'Memuat...' : lowStockCount > 0 ? 'perlu restock' : 'aman'}
+              icon={AlertTriangle}
+              color="neutral"
+            />
           </>
         )}
       </div>
-
-      {/* Today's Summary */}
-      {isAdmin && (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="card-premium p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F1F3F7]">
-                <ShoppingBag size={15} className="text-[#6B7280]" />
-              </div>
-              <span className="text-xs font-medium text-[#6B7280]">Penjualan Hari Ini</span>
-            </div>
-            <p className="text-xl font-bold text-[#111827] tabular-nums">{todayStats.sales}</p>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">transaksi</p>
-          </div>
-          <div className="card-premium p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FEF9C3]">
-                <DollarSign size={15} className="text-[#FEC40B]" />
-              </div>
-              <span className="text-xs font-medium text-[#6B7280]">Omzet Hari Ini</span>
-            </div>
-            <p className="text-xl font-bold text-[#111827] tabular-nums">{formatRupiah(todayStats.omzet)}</p>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">dari penjualan unit</p>
-          </div>
-          <div className="card-premium p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F1F3F7]">
-                <Wrench size={15} className="text-[#04123F]" />
-              </div>
-              <span className="text-xs font-medium text-[#6B7280]">Servis Hari Ini</span>
-            </div>
-            <p className="text-xl font-bold text-[#111827] tabular-nums">{todayStats.servis}</p>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">tiket servis</p>
-          </div>
-          <div className="card-premium p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: lowStockCount > 0 ? '#FEF3C7' : '#F1F3F7' }}>
-                <AlertTriangle size={15} className={lowStockCount > 0 ? 'text-[#F59E0B]' : 'text-[#9CA3AF]'} />
-              </div>
-              <span className="text-xs font-medium text-[#6B7280]">Stok Menipis</span>
-            </div>
-            <p className="text-xl font-bold text-[#111827] tabular-nums">{lowStockCount}</p>
-            <p className="text-xs text-[#9CA3AF] mt-0.5">item perlu restock</p>
-          </div>
-        </div>
-      )}
 
       {/* Main Chart */}
       {isAdmin && (
