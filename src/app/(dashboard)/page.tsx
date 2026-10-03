@@ -193,7 +193,7 @@ export default function DashboardPage() {
             Dashboard POS
           </h1>
           <p className="mt-1 text-sm text-[#6B7280]">
-            {isAdmin ? `Ringkasan performa bisnis toko laptop — ${periodLabel}` : 'Ringkasan aktivitas hari ini'}
+            {isAdmin ? `Pantau bisnis toko laptop Anda — ${periodLabel}` : 'Aktivitas Anda hari ini'}
           </p>
         </div>
         {isAdmin && (
