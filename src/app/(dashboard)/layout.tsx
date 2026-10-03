@@ -1,7 +1,7 @@
 'use client'
 
 import { useAuth } from '@/lib/auth-context'
-import { useRouter, usePathname } from 'next/navigation'
+import { useRouter, usePathname, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { supabase } from '@/lib/supabase'
 import {
@@ -51,8 +51,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [storeName, setStoreName] = useState('Kasir POS')
 
   useEffect(() => {
-    if (!loading && !user) router.push('/login')
-  }, [user, loading, router])
+    if (!loading && !user) redirect('/login')
+  }, [user, loading])
 
   useEffect(() => {
     supabase.from('settings').select('value').eq('key', 'store_name').maybeSingle()
