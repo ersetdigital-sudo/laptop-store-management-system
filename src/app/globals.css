@@ -253,6 +253,65 @@ table {
   .bg-light-gray { background-color: #F1F3F7; }
 }
 
+/* ── Mobile bottom navigation ─────────────────────── */
+.mobile-bottom-nav {
+  display: none;
+}
+@media (max-width: 1023px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: 64px;
+    background: #04123F;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  }
+  .mobile-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 150ms ease;
+    min-height: 44px;
+  }
+  .mobile-bottom-nav-item span {
+    line-height: 1;
+  }
+}
+
+/* ── Premium card ──────────────────────────────────── */
+.card-premium {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(4, 18, 63, 0.05), 0 1px 2px rgba(4, 18, 63, 0.03);
+  transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+}
+.card-premium:hover {
+  box-shadow: 0 8px 24px rgba(4, 18, 63, 0.08), 0 2px 8px rgba(4, 18, 63, 0.04);
+  border-color: #D1D5DB;
+}
+
+/* ── Mobile card refinements ───────────────────────── */
+@media (max-width: 639px) {
+  .card-premium {
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(4, 18, 63, 0.04);
+  }
+}
+
 /* Toast animation */
 @keyframes toast-slide-in {
   from {

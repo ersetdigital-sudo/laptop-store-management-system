@@ -54,7 +54,7 @@ export default function RecentTransactions({ items, limit = 5, isAdmin = true }:
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6">
+    <div className="card-premium p-5 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-base font-bold text-[#111827]" style={{ fontWeight: 700 }}>

@@ -275,7 +275,7 @@ export default function DashboardPage() {
       {/* Today's Summary */}
       {isAdmin && (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
+          <div className="card-premium p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F1F3F7]">
                 <ShoppingBag size={15} className="text-[#6B7280]" />
@@ -285,7 +285,7 @@ export default function DashboardPage() {
             <p className="text-xl font-bold text-[#111827] tabular-nums">{todayStats.sales}</p>
             <p className="text-xs text-[#9CA3AF] mt-0.5">transaksi</p>
           </div>
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
+          <div className="card-premium p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#FEF9C3]">
                 <DollarSign size={15} className="text-[#FEC40B]" />
@@ -295,7 +295,7 @@ export default function DashboardPage() {
             <p className="text-xl font-bold text-[#111827] tabular-nums">{formatRupiah(todayStats.omzet)}</p>
             <p className="text-xs text-[#9CA3AF] mt-0.5">dari penjualan unit</p>
           </div>
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
+          <div className="card-premium p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F1F3F7]">
                 <Wrench size={15} className="text-[#04123F]" />
@@ -305,7 +305,7 @@ export default function DashboardPage() {
             <p className="text-xl font-bold text-[#111827] tabular-nums">{todayStats.servis}</p>
             <p className="text-xs text-[#9CA3AF] mt-0.5">tiket servis</p>
           </div>
-          <div className="bg-white rounded-2xl border border-[#E5E7EB] p-4">
+          <div className="card-premium p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: lowStockCount > 0 ? '#FEF3C7' : '#F1F3F7' }}>
                 <AlertTriangle size={15} className={lowStockCount > 0 ? 'text-[#F59E0B]' : 'text-[#9CA3AF]'} />

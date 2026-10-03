@@ -39,11 +39,7 @@ export default function StatCard({
 
   return (
     <div
-      className={cn(
-        'bg-white rounded-2xl border border-[#E5E7EB] p-5 transition-shadow',
-        'hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]',
-        className
-      )}
+      className={cn('card-premium p-5', className)}
     >
       <div className="flex items-start justify-between mb-3">
         <div

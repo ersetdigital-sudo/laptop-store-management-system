@@ -103,15 +103,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex h-16 items-center px-5 shrink-0">
           <Link href="/" className="flex items-center gap-3 no-underline w-full" onClick={() => setOpen(false)}>
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: '#FEC40B' }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <rect x="3" y="2" width="14" height="16" rx="2.5" stroke="#04123F" strokeWidth="1.8"/>
-                <line x1="6.5" y1="6" x2="13.5" y2="6" stroke="#04123F" strokeWidth="1.4" strokeLinecap="round"/>
-                <line x1="6.5" y1="9.5" x2="13.5" y2="9.5" stroke="#04123F" strokeWidth="1.4" strokeLinecap="round"/>
-                <line x1="6.5" y1="13" x2="10" y2="13" stroke="#04123F" strokeWidth="1.4" strokeLinecap="round"/>
-              </svg>
+              <Laptop size={20} className="text-[#04123F]" strokeWidth={2} />
             </div>
             <div className="min-w-0 flex-1">
-              <h1 className="text-[15px] font-bold text-white leading-tight tracking-tight truncate" style={{ wordBreak: 'break-word' }}>
+              <h1 className="text-[13px] font-bold text-white leading-tight tracking-tight break-words">
                 {storeName}
               </h1>
               <p className="text-[11px] text-white/40 leading-tight mt-0.5">POS System</p>
@@ -212,11 +207,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto bg-soft">
-          <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+          <div className="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8 pb-24 lg:pb-8">
             {children}
           </div>
         </main>
       </div>
+
+      {/* Mobile bottom navigation */}
+      <nav className="mobile-bottom-nav">
+        {navItems.slice(0, 5).map((item) => {
+          const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href))
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setOpen(false)}
+              className="mobile-bottom-nav-item"
+              style={isActive ? { color: '#FEC40B' } : undefined}
+            >
+              <item.icon size={22} strokeWidth={isActive ? 2.4 : 1.7} />
+              <span>{item.label}</span>
+            </Link>
+          )
+        })}
+      </nav>
+
       <ToastContainer />
     </div>
   )

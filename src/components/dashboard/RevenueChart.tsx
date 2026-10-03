@@ -48,7 +48,7 @@ export default function RevenueChart({ data, title, subtitle, year }: RevenueCha
   const hasData = data.some(d => d.omzet > 0 || d.profit > 0 || (d.biaya ?? 0) > 0)
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6">
+    <div className="card-premium p-5 sm:p-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-5 gap-2">
         <div>

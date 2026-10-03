@@ -17,7 +17,7 @@ export default function TopCustomers({ items, limit = 5 }: TopCustomersProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#E5E7EB] p-5 sm:p-6">
+    <div className="card-premium p-5 sm:p-6">
       <div className="mb-4">
         <h3 className="text-base font-bold text-[#111827]" style={{ fontWeight: 700 }}>
           Customer Terbaik
