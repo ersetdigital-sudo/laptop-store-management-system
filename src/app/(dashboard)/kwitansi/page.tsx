@@ -212,8 +212,8 @@ export default function RiwayatKwitansiPage() {
   return (
     <div className="space-y-4 sm:space-y-5">
       <PageHeader title="Riwayat Kwitansi" subtitle="Daftar kwitansi pembelian dari supplier">
-        <Link href="/kwitansi/buat">
-          <Button className="gap-1.5 h-10 text-xs sm:text-sm shadow-sm">
+        <Link href="/kwitansi/buat" className="w-full sm:w-auto">
+          <Button className="gap-1.5 h-10 w-full text-xs sm:text-sm shadow-sm sm:w-auto">
             <Plus size={16} strokeWidth={2.5} />
             Buat Kwitansi
           </Button>
@@ -222,14 +222,14 @@ export default function RiwayatKwitansiPage() {
           <select
             value={month}
             onChange={e => setFilterMonth(`${year}-${e.target.value.padStart(2, '0')}`)}
-            className="flex-1 sm:flex-none h-10 rounded-xl border border-hairline-strong bg-surface px-3 text-sm font-medium"
+            className="flex-1 h-10 rounded-xl border border-hairline-strong bg-surface px-3 text-sm font-medium sm:flex-none"
           >
             {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
           </select>
           <select
             value={year}
             onChange={e => setFilterMonth(`${e.target.value}-${String(month).padStart(2, '0')}`)}
-            className="flex-1 sm:flex-none h-10 rounded-xl border border-hairline-strong bg-surface px-3 text-sm font-medium"
+            className="flex-1 h-10 rounded-xl border border-hairline-strong bg-surface px-3 text-sm font-medium sm:flex-none"
           >
             {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
@@ -246,7 +246,7 @@ export default function RiwayatKwitansiPage() {
             </div>
             <p className={`text-[8px] font-semibold uppercase tracking-wide leading-tight truncate ${card.dark ? 'text-white/70' : 'text-gray-500'}`}>{card.label}</p>
             <p className={`mt-0.5 font-bold leading-tight text-lg ${card.dark ? 'text-white' : 'text-gray-900'}`}>{card.value}</p>
-            <span className={`mt-1 inline-block rounded-full px-1.5 py-0.5 text-[8px] font-medium leading-tight ${card.dark ? 'bg-white/10 text-white/80' : 'bg-gray-100 text-gray-500'}`}>{card.badge}</span>
+            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight ${card.dark ? 'bg-white/15 text-white' : 'bg-gray-100 text-gray-600'}`}>{card.badge}</span>
           </div>
         ))}
       </div>

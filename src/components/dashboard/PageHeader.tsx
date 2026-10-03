@@ -16,7 +16,7 @@ export default function PageHeader({ title, subtitle, children }: PageHeaderProp
         )}
       </div>
       {children && (
-        <div className="flex items-center gap-2 w-full sm:w-auto">
+        <div className="flex flex-col gap-2 w-full sm:flex-row sm:items-center sm:gap-2 sm:w-auto">
           {children}
         </div>
       )}
