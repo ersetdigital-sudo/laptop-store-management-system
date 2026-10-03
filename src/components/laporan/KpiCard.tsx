@@ -6,11 +6,11 @@ import { useCountUp } from './useCountUp'
 import { resolveTrend } from '@/lib/trend'
 
 const TONES = {
-  emerald: { tile: 'bg-emerald-50 text-emerald-600', bar: 'from-emerald-500' },
-  sky: { tile: 'bg-sky-50 text-sky-600', bar: 'from-sky-500' },
-  orange: { tile: 'bg-orange-50 text-orange-600', bar: 'from-orange-500' },
-  danger: { tile: 'bg-red-50 text-red-600', bar: 'from-red-500' },
-  primary: { tile: 'bg-[#04123F] text-white', bar: 'from-[#04123F]' },
+  emerald: { glow: '#10b981' },
+  sky: { glow: '#0ea5e9' },
+  orange: { glow: '#f97316' },
+  danger: { glow: '#ef4444' },
+  primary: { glow: '#FEC40B' },
 } as const
 
 interface KpiCardProps {
@@ -42,34 +42,67 @@ export default function KpiCard({
   const animated = useCountUp(value)
   const display = format(animated)
   const trend = delta != null ? resolveTrend(delta, invertDelta) : null
+  const isPrimary = tone === 'primary'
+  const glow = TONES[tone].glow
 
   return (
     <div
       className={cn(
-        'group relative overflow-hidden rounded-xl border border-hairline bg-surface-card p-3.5 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover',
+        'relative overflow-hidden rounded-xl p-4 shadow-card transition-all duration-300 hover:-translate-y-0.5 hover:shadow-card-hover',
+        isPrimary
+          ? 'bg-[#04123F] border border-[#04123F]'
+          : 'bg-white border border-hairline',
         className,
       )}
     >
-      <div className={cn('pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r to-transparent', TONES[tone].bar)} />
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-[10px] font-medium uppercase tracking-wide text-gray-400">{title}</p>
-          <p className={cn('mt-1.5 break-words text-base font-bold tabular-nums sm:text-lg lg:text-xl', value < 0 ? 'text-red-600' : 'text-gray-900')}>{display}</p>
-          {sub && <p className="mt-0.5 truncate text-[10px] font-medium text-gray-400">{sub}</p>}
-        </div>
-        <div className={cn('grid h-9 w-9 shrink-0 place-items-center rounded-lg transition-transform duration-300 group-hover:scale-110', TONES[tone].tile)}>
-          <Icon className="h-4 w-4" strokeWidth={2} />
-        </div>
-      </div>
-      {trend && (
+      {/* Subtle accent glow */}
+      <div
+        className="pointer-events-none absolute -right-6 -top-6 h-20 w-20 rounded-full opacity-[0.07] blur-2xl"
+        style={{ background: glow }}
+      />
+
+      <div className="relative flex items-center gap-3">
         <div
           className={cn(
-            'mt-2 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold',
-            trend.good ? 'bg-badge-success/10 text-badge-success' : 'bg-danger/10 text-danger',
+            'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+            isPrimary ? 'bg-[#FEC40B]' : 'bg-[#04123F]',
           )}
         >
-          {trend.up ? '↑' : '↓'} {trend.pct}%
-          <span className="font-normal text-muted-foreground">vs bln lalu</span>
+          <Icon className={cn('h-5 w-5', isPrimary ? 'text-[#04123F]' : 'text-white')} strokeWidth={2} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className={cn('text-[10px] font-semibold uppercase tracking-wide leading-none', isPrimary ? 'text-white/50' : 'text-gray-400')}>
+            {title}
+          </p>
+          <p
+            className={cn(
+              'mt-1.5 break-words text-base font-bold leading-tight tabular-nums sm:text-lg lg:text-xl',
+              value < 0 ? 'text-red-500' : isPrimary ? (tone === 'primary' ? 'text-white' : 'text-white') : 'text-gray-900',
+            )}
+          >
+            {display}
+          </p>
+          {sub && (
+            <p className={cn('mt-0.5 truncate text-[10px] font-medium', isPrimary ? 'text-white/40' : 'text-gray-400')}>
+              {sub}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {trend && (
+        <div className="relative mt-3 flex items-center gap-1.5">
+          <span
+            className={cn(
+              'inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 text-[10px] font-bold',
+              trend.good ? 'bg-badge-success/10 text-badge-success' : 'bg-danger/10 text-danger',
+            )}
+          >
+            {trend.up ? '↑' : '↓'} {trend.pct}%
+          </span>
+          <span className={cn('text-[10px]', isPrimary ? 'text-white/40' : 'text-muted-foreground')}>
+            vs bln lalu
+          </span>
         </div>
       )}
     </div>
