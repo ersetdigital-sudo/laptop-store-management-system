@@ -152,10 +152,10 @@ export default function RiwayatKwitansiPage() {
   const periodLabel = `${months[month - 1]} ${year}`
 
   const summaryCards = [
-    { label: 'Total Kwitansi', value: receipts.length, icon: FileText, color: 'text-badge-info', bg: 'bg-blue-50' },
-    { label: 'Total Item', value: totalItems, icon: Package, color: 'text-badge-success', bg: 'bg-emerald-50' },
-    { label: 'Total Pengeluaran', value: formatRupiah(totalAmount), icon: DollarSign, color: 'text-amber-600', bg: 'bg-amber-50' },
-    { label: 'Supplier', value: new Set(receipts.map(r => r.supplier_name)).size, icon: User, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { label: 'Total Kwitansi', value: receipts.length, subtext: 'Kwitansi tercatat', icon: FileText, iconColor: 'text-[#04123F]', iconBg: 'bg-blue-50' },
+    { label: 'Total Item', value: totalItems, subtext: 'Item dibeli', icon: Package, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50' },
+    { label: 'Supplier', value: new Set(receipts.map(r => r.supplier_name)).size, subtext: 'Supplier aktif', icon: User, iconColor: 'text-purple-600', iconBg: 'bg-purple-50' },
+    { label: 'Total Pengeluaran', value: formatRupiah(totalAmount), subtext: 'Total pembelian', icon: DollarSign, iconColor: 'text-[#FEC40B]', iconBg: 'bg-amber-50', financial: true },
   ]
 
   async function handleDownloadPDF(receipt: ReceiptWithItems) {
@@ -232,17 +232,18 @@ export default function RiwayatKwitansiPage() {
         </div>
       </PageHeader>
 
-      {/* Summary Cards — Modern */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {/* Summary Cards — Modern Premium */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {summaryCards.map(card => (
-          <div key={card.label} className="card-premium p-4">
-            <div className="flex items-center gap-3">
-              <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${card.bg}`}>
-                <card.icon size={20} className={card.color} strokeWidth={2} />
+          <div key={card.label} className="card-premium h-full p-4 sm:p-5 transition-transform duration-200 hover:-translate-y-0.5">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+              <div className={`grid h-9 w-9 sm:h-11 sm:w-11 shrink-0 place-items-center rounded-xl ${card.iconBg}`}>
+                <card.icon size={18} className={card.iconColor} strokeWidth={2} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
-                <p className="text-base font-bold text-ink truncate leading-tight mt-0.5">{card.value}</p>
+                <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
+                <p className={`mt-0.5 font-bold leading-tight ${card.financial ? 'text-base sm:text-lg lg:text-xl text-amber-600' : 'text-lg sm:text-xl lg:text-2xl text-ink'}`}>{card.value}</p>
+                <p className="mt-0.5 text-[11px] sm:text-xs text-muted-foreground">{card.subtext}</p>
               </div>
             </div>
           </div>
