@@ -31,13 +31,13 @@ export default function StatCard({
           {title}
         </p>
         <p
-          className="mt-1 text-xl font-bold leading-tight tabular-nums text-[#111827] truncate"
+          className="mt-1 text-base sm:text-xl font-bold leading-tight tabular-nums text-[#111827] break-words"
           style={accent ? { color: accent } : undefined}
         >
           {value}
         </p>
         {sub && (
-          <p className="mt-0.5 text-[11px] leading-tight truncate" style={{ color: accent ?? '#9CA3AF' }}>
+          <p className="mt-0.5 text-[11px] leading-tight break-words" style={{ color: accent ?? '#9CA3AF' }}>
             {sub}
           </p>
         )}
