@@ -105,9 +105,9 @@ export default function DashboardPage() {
       // Top products
       const productMap: Record<string, { qty: number; revenue: number; category: string }> = {}
       sales.forEach(s => {
-        const prodName = s.product_id || 'Unknown'
+        const prodName = s.product_name || s.product_id || 'Unknown'
         if (!productMap[prodName]) productMap[prodName] = { qty: 0, revenue: 0, category: 'Unit' }
-        productMap[prodName].qty += 1
+        productMap[prodName].qty += s.quantity || 1
         productMap[prodName].revenue += s.sell_price || 0
       })
       const topProds = Object.entries(productMap)
