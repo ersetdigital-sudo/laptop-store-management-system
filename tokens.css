@@ -1,37 +1,41 @@
-/* Uber Design System — Tokens */
+/* Premium POS Design System — Tokens */
 
 :root {
-  /* Colors - Uber Black/White Palette */
-  --color-primary: #000000;
-  --color-primary-deep: #1a1a1a;
-  --color-secondary: #efefef;
-  --color-background: #ffffff;
-  --color-background-canvas: #fafafa;
-  --color-background-bone: #f0f0f0;
-  --color-surface: #ffffff;
-  --color-surface-card: #ffffff;
-  --color-surface-dark: #000000;
-  --color-surface-deep: #1a1a1a;
-  --color-ink: #000000;
-  --color-body: #000000;
-  --color-charcoal: #222222;
-  --color-ash: #4b4b4b;
-  --color-stone: #afafaf;
-  --color-on-primary: #ffffff;
-  --color-on-dark: #fcfcfc;
-  --color-on-dark-mute: rgba(252, 252, 252, 0.72);
-  --color-hairline: #efefef;
-  --color-hairline-strong: #000000;
-  --color-divider: #e0e0e0;
-  --color-badge-success: #34d399;
-  --color-badge-warning: #f59e0b;
-  --color-badge-info: #3b82f6;
-  --color-danger: #dc2626;
-  --color-focus: rgba(0, 0, 0, 0.5);
+  /* Colors - Honey Gold / Deep Navy Palette */
+  --color-primary: #04123F;
+  --color-primary-deep: #030E30;
+  --color-secondary: #F1F3F7;
+  --color-background: #F8F9FC;
+  --color-background-canvas: #F8F9FC;
+  --color-background-bone: #F1F3F7;
+  --color-surface: #FFFFFF;
+  --color-surface-card: #FFFFFF;
+  --color-surface-dark: #04123F;
+  --color-surface-deep: #030E30;
+  --color-ink: #111827;
+  --color-body: #111827;
+  --color-charcoal: #1F2937;
+  --color-ash: #6B7280;
+  --color-stone: #9CA3AF;
+  --color-on-primary: #FFFFFF;
+  --color-on-dark: #FFFFFF;
+  --color-on-dark-mute: rgba(255, 255, 255, 0.65);
+  --color-hairline: #E5E7EB;
+  --color-hairline-strong: #04123F;
+  --color-divider: #E5E7EB;
+  --color-badge-success: #059669;
+  --color-badge-warning: #FEC40B;
+  --color-badge-info: #3B82F6;
+  --color-danger: #DC2626;
+  --color-focus: rgba(4, 18, 63, 0.4);
+  --color-honey: #FEC40B;
+  --color-navy: #04123F;
+  --color-soft-bg: #F8F9FC;
+  --color-light-gray: #F1F3F7;
 
-  /* Typography - DM Sans */
-  --font-display: 'DM Sans', system-ui, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-body: 'DM Sans', system-ui, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  /* Typography - Inter */
+  --font-display: var(--font-inter), system-ui, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-body: var(--font-inter), system-ui, -apple-system, 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Consolas, monospace;
 
   /* Spacing - 8px grid */
@@ -50,13 +54,14 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
+  --radius-xl: 20px;
   --radius-full: 9999px;
 
   /* Shadows - Whisper-soft */
-  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.08);
-  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+  --shadow-card-hover: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.05);
 
   /* Animation */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -66,7 +71,7 @@
 .text-display-xxl {
   font-family: var(--font-display);
   font-size: 4rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.0;
   letter-spacing: -0.02em;
 }
@@ -74,7 +79,7 @@
 .text-display-xl {
   font-family: var(--font-display);
   font-size: 3.25rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.22;
   letter-spacing: -0.02em;
 }
@@ -82,7 +87,7 @@
 .text-display-lg {
   font-family: var(--font-display);
   font-size: 2.25rem;
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.22;
   letter-spacing: -0.02em;
 }

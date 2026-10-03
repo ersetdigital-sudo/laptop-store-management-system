@@ -19,6 +19,7 @@ const buttonVariants = cva(
         ghost:
           "text-ink hover:bg-secondary",
         link: "text-primary underline-offset-4 hover:underline",
+        honey: "bg-[#FEC40B] text-[#04123F] hover:bg-[#F5B800] shadow-sm font-semibold",
       },
       size: {
         default: "h-[44px] px-6 py-3",

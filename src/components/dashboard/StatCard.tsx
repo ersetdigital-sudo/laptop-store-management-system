@@ -1,24 +1,28 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LucideIcon } from 'lucide-react'
 
 interface StatCardProps {
   title: string
   value: string
   sub?: string
   icon: LucideIcon
-  color?: 'primary' | 'emerald' | 'orange' | 'danger' | 'sky'
+  color?: 'navy' | 'honey' | 'success' | 'danger'
   valueClass?: string
   className?: string
 }
 
-// Sub-caption color based on status
-const SUB_COLOR = {
-  emerald: 'text-badge-success',
-  primary: 'text-stone',
-  orange: 'text-badge-warning',
-  danger: 'text-danger',
-  sky: 'text-badge-info',
+const ICON_STYLES: Record<string, { bg: string; color: string }> = {
+  navy: { bg: '#EEF0F8', color: '#04123F' },
+  honey: { bg: '#FEF9C3', color: '#B45309' },
+  success: { bg: '#ECFDF5', color: '#059669' },
+  danger: { bg: '#FEF2F2', color: '#DC2626' },
+}
+
+const SUB_COLOR: Record<string, string> = {
+  navy: '#6B7280',
+  honey: '#6B7280',
+  success: '#059669',
+  danger: '#DC2626',
 }
 
 export default function StatCard({
@@ -26,39 +30,47 @@ export default function StatCard({
   value,
   sub,
   icon: Icon,
-  color = 'primary',
+  color = 'navy',
   valueClass = '',
   className = ''
 }: StatCardProps) {
-  return (
-    <Card className={cn('shadow-card hover:shadow-card-hover transition-shadow', className)}>
-      <CardContent className="p-3.5 flex items-center gap-2.5">
-        {/* Icon Box - ALWAYS BLACK with white icon */}
-        <div className="h-9 w-9 rounded-sm bg-primary text-on-primary grid place-items-center shrink-0">
-          <Icon className="h-4 w-4" strokeWidth={2} />
-        </div>
+  const iconStyle = ICON_STYLES[color]
+  const subColor = SUB_COLOR[color]
 
-        {/* Content - Compact spacing */}
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-medium text-ash leading-none truncate uppercase tracking-wide">
-            {title}
-          </p>
-          <p className={cn(
-            'text-lg font-bold mt-0.5 leading-none break-words tabular-nums truncate',
-            valueClass || 'text-ink'
-          )} style={{ fontWeight: 700 }}>
-            {value}
-          </p>
-          {sub && (
-            <p className={cn(
-              'text-[10px] font-medium mt-0.5 leading-none truncate',
-              SUB_COLOR[color] || SUB_COLOR.primary
-            )}>
-              {sub}
-            </p>
-          )}
+  return (
+    <div
+      className={cn(
+        'bg-white rounded-2xl border border-[#E5E7EB] p-5 transition-shadow',
+        'hover:shadow-[0_4px_12px_rgba(0,0,0,0.06)]',
+        className
+      )}
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div
+          className="flex h-11 w-11 items-center justify-center rounded-xl"
+          style={{ background: iconStyle.bg }}
+        >
+          <Icon className="h-5 w-5" strokeWidth={2} style={{ color: iconStyle.color }} />
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      <p className="text-xs font-medium text-[#6B7280] uppercase tracking-wide leading-none">
+        {title}
+      </p>
+      <p
+        className="text-[26px] font-bold mt-1.5 leading-none tabular-nums text-[#111827]"
+        style={{ fontWeight: 700 }}
+      >
+        {value}
+      </p>
+      {sub && (
+        <p
+          className="text-xs font-medium mt-2 leading-none"
+          style={{ color: subColor }}
+        >
+          {sub}
+        </p>
+      )}
+    </div>
   )
 }

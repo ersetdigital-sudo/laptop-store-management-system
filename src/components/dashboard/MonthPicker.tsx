@@ -35,7 +35,9 @@ export default function MonthPicker({ month, year }: MonthPickerProps) {
   return (
     <div className="flex items-center gap-2">
       <Select value={month} onValueChange={handleMonthChange}>
-        <SelectTrigger className="w-[140px]">
+        <SelectTrigger
+          className="w-[130px] h-10 rounded-xl bg-white border-[#E5E7EB] text-sm text-[#111827] font-medium"
+        >
           <SelectValue placeholder="Pilih bulan" />
         </SelectTrigger>
         <SelectContent>
@@ -49,7 +51,9 @@ export default function MonthPicker({ month, year }: MonthPickerProps) {
       </Select>
 
       <Select value={year} onValueChange={handleYearChange}>
-        <SelectTrigger className="w-[100px]">
+        <SelectTrigger
+          className="w-[90px] h-10 rounded-xl bg-white border-[#E5E7EB] text-sm text-[#111827] font-medium"
+        >
           <SelectValue placeholder="Tahun" />
         </SelectTrigger>
         <SelectContent>
