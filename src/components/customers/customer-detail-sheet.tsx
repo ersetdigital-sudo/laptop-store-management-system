@@ -222,21 +222,21 @@ export function CustomerDetailSheet({ open, customerId, onClose }: CustomerDetai
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Profil header — ala product-detail-sheet */}
-              <div className="overflow-hidden rounded-2xl border border-hairline bg-gradient-to-br from-primary/[0.07] to-transparent shadow-card">
+              {/* Profil header — Premium Navy */}
+              <div className="overflow-hidden rounded-2xl bg-[#04123F] shadow-card">
                 <div className="p-4 sm:p-5">
                   <div className="flex items-center gap-3.5">
-                    <div className={`grid h-14 w-14 shrink-0 place-items-center rounded-2xl text-lg font-bold ${avatarTone(customer.nama)}`}>
+                    <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-[#FEC40B] text-lg font-bold text-[#04123F]">
                       {initials(customer.nama)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <h3 className="truncate text-lg font-bold text-foreground">{customer.nama}</h3>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                      <h3 className="truncate text-lg font-bold text-white">{customer.nama}</h3>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-white/60">
                         <Phone size={12} className="shrink-0" />
                         <span className="font-mono">{customer.no_wa}</span>
                       </div>
                       {customer.alamat && (
-                        <div className="mt-0.5 flex items-center gap-2 text-xs text-muted-foreground">
+                        <div className="mt-0.5 flex items-center gap-2 text-xs text-white/60">
                           <MapPin size={12} className="shrink-0" />
                           <span className="truncate">{customer.alamat}</span>
                         </div>
@@ -247,62 +247,62 @@ export function CustomerDetailSheet({ open, customerId, onClose }: CustomerDetai
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`WhatsApp ${customer.nama}`}
-                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-badge-success/15 text-badge-success transition-colors hover:bg-badge-success/25"
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-emerald-500/20 text-emerald-300 transition-colors hover:bg-emerald-500/30"
                     >
                       <MessageCircle size={17} strokeWidth={2} />
                     </a>
                   </div>
 
-                  {/* Stats */}
-                  <div className="mt-4 grid grid-cols-2 gap-2 border-t border-hairline pt-4 sm:grid-cols-4">
-                    <div className="rounded-xl bg-surface-card p-2.5 text-center">
-                      <p className="text-lg font-bold text-foreground">{services.length}</p>
-                      <p className="text-[10px] text-muted-foreground">Service</p>
+                  {/* Stats — Gold accent on dark */}
+                  <div className="mt-4 grid grid-cols-2 gap-2 border-t border-white/10 pt-4 sm:grid-cols-4">
+                    <div className="rounded-xl bg-white/[0.06] p-2.5 text-center">
+                      <p className="text-lg font-bold text-white">{services.length}</p>
+                      <p className="text-[10px] text-white/50">Service</p>
                     </div>
-                    <div className="rounded-xl bg-surface-card p-2.5 text-center">
-                      <p className="text-lg font-bold text-foreground">{sales.length}</p>
-                      <p className="text-[10px] text-muted-foreground">Penjualan</p>
+                    <div className="rounded-xl bg-white/[0.06] p-2.5 text-center">
+                      <p className="text-lg font-bold text-white">{sales.length}</p>
+                      <p className="text-[10px] text-white/50">Penjualan</p>
                     </div>
-                    <div className="rounded-xl bg-surface-card p-2.5 text-center col-span-2 sm:col-span-1">
-                      <p className="truncate text-sm font-bold text-foreground">
+                    <div className="rounded-xl bg-white/[0.06] p-2.5 text-center col-span-2 sm:col-span-1">
+                      <p className="truncate text-sm font-bold text-[#FEC40B]">
                         {formatRupiah(services.reduce((sum, s) => sum + s.total_fee, 0) + sales.reduce((sum, s) => sum + s.sell_price, 0))}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Total Nilai</p>
+                      <p className="text-[10px] text-white/50">Total Nilai</p>
                     </div>
-                    <div className="rounded-xl bg-surface-card p-2.5 text-center col-span-2 sm:col-span-1">
-                      <p className="truncate text-xs font-medium text-foreground">
+                    <div className="rounded-xl bg-white/[0.06] p-2.5 text-center col-span-2 sm:col-span-1">
+                      <p className="truncate text-xs font-medium text-white/80">
                         {formatDate(services[0]?.date_in || sales[0]?.date || null)}
                       </p>
-                      <p className="text-[10px] text-muted-foreground">Transaksi Terakhir</p>
+                      <p className="text-[10px] text-white/50">Transaksi Terakhir</p>
                     </div>
-                  </div>
-
-                  {/* Aksi cepat */}
-                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                    <Link href={`/servis?customer_id=${customer.id}&nama=${encodeURIComponent(customer.nama)}&phone=${encodeURIComponent(customer.no_wa)}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="h-9 w-full gap-1.5">
-                        <Plus size={14} />
-                        <Wrench size={14} />
-                        Nota Service
-                      </Button>
-                    </Link>
-                    <Link href={`/unit-laptop/jual?customer_id=${customer.id}&nama=${encodeURIComponent(customer.nama)}&phone=${encodeURIComponent(customer.no_wa)}`} className="flex-1">
-                      <Button variant="outline" size="sm" className="h-9 w-full gap-1.5">
-                        <Plus size={14} />
-                        <ShoppingCart size={14} />
-                        Nota Penjualan
-                      </Button>
-                    </Link>
                   </div>
                 </div>
               </div>
 
-              {/* Tab Toggle */}
-              <div className="flex gap-1 rounded-lg border border-border bg-muted/50 p-1">
+              {/* Quick Actions */}
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link href={`/servis?customer_id=${customer.id}&nama=${encodeURIComponent(customer.nama)}&phone=${encodeURIComponent(customer.no_wa)}`} className="flex-1">
+                  <Button variant="outline" size="sm" className="h-9 w-full gap-1.5">
+                    <Plus size={14} />
+                    <Wrench size={14} />
+                    Nota Service
+                  </Button>
+                </Link>
+                <Link href={`/unit-laptop/jual?customer_id=${customer.id}&nama=${encodeURIComponent(customer.nama)}&phone=${encodeURIComponent(customer.no_wa)}`} className="flex-1">
+                  <Button variant="outline" size="sm" className="h-9 w-full gap-1.5">
+                    <Plus size={14} />
+                    <ShoppingCart size={14} />
+                    Nota Penjualan
+                  </Button>
+                </Link>
+              </div>
+
+              {/* Tab Toggle — Premium */}
+              <div className="flex gap-1 rounded-xl border border-hairline bg-gray-50/50 p-1">
                 <button
                   onClick={() => setTab('service')}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-                    tab === 'service' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                    tab === 'service' ? 'bg-[#04123F] text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
                   <Wrench size={15} />
@@ -310,8 +310,8 @@ export function CustomerDetailSheet({ open, customerId, onClose }: CustomerDetai
                 </button>
                 <button
                   onClick={() => setTab('penjualan')}
-                  className={`flex-1 flex items-center justify-center gap-2 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
-                    tab === 'penjualan' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'
+                  className={`flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-all ${
+                    tab === 'penjualan' ? 'bg-[#04123F] text-white shadow-sm' : 'text-gray-500 hover:text-gray-900'
                   }`}
                 >
                   <ShoppingCart size={15} />
@@ -319,131 +319,125 @@ export function CustomerDetailSheet({ open, customerId, onClose }: CustomerDetai
                 </button>
               </div>
 
-              {/* Service History */}
+              {/* Service History — Premium Cards */}
               {tab === 'service' && (
                 <div className="space-y-2">
                   {services.length === 0 ? (
-                    <Card className="shadow-card">
-                      <CardContent className="p-6 text-center">
-                        <p className="text-sm text-muted-foreground">Belum ada riwayat service</p>
-                      </CardContent>
-                    </Card>
+                    <div className="rounded-2xl border border-hairline bg-gray-50/50 p-8 text-center">
+                      <Wrench size={28} className="mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm text-muted-foreground">Belum ada riwayat service</p>
+                    </div>
                   ) : (
                     services.map(s => (
-                      <Card key={s.id} className="shadow-card hover:bg-muted/50 transition-colors">
-                        <CardContent className="p-3 sm:p-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <p className="text-sm font-mono font-semibold text-foreground">{s.nota_number}</p>
-                                <Badge variant={getStatusColor(s.status)} className="text-[10px] px-1.5 py-0.5">
-                                  {getStatusLabel(s.status)}
-                                </Badge>
-                              </div>
-                              <p className="text-sm font-medium text-foreground">
-                                {s.device_type} {s.device_brand} {s.device_model}
-                              </p>
-                              {s.complaint && (
-                                <p className="text-xs text-muted-foreground mt-1 truncate">{s.complaint}</p>
-                              )}
-                              <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Calendar size={11} />
-                                  {formatDate(s.date_in)}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <DollarSign size={11} />
-                                  {formatRupiah(s.total_fee)}
-                                </span>
-                              </div>
+                      <div key={s.id} className="rounded-xl border border-hairline bg-white p-3.5 transition-colors hover:border-hairline-strong">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <p className="text-xs font-mono font-semibold text-gray-900">{s.nota_number}</p>
+                              <Badge variant={getStatusColor(s.status)} className="text-[10px] px-1.5 py-0.5">
+                                {getStatusLabel(s.status)}
+                              </Badge>
                             </div>
-                            <div className="flex gap-1 shrink-0">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => handleDownloadServicePDF(s)}
-                                disabled={pdfLoading === s.id}
-                              >
-                                {pdfLoading === s.id ? (
-                                  <Loader2 size={14} className="animate-spin" />
-                                ) : (
-                                  <Download size={14} />
-                                )}
-                              </Button>
-                              <Link href={`/servis/${s.id}`}>
-                                <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
-                                  Detail
-                                </Button>
-                              </Link>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {s.device_type} {s.device_brand} {s.device_model}
+                            </p>
+                            {s.complaint && (
+                              <p className="text-xs text-gray-400 mt-1 truncate">{s.complaint}</p>
+                            )}
+                            <div className="flex items-center gap-3 mt-2.5 text-xs">
+                              <span className="flex items-center gap-1 text-gray-500">
+                                <Calendar size={11} />
+                                {formatDate(s.date_in)}
+                              </span>
+                              <span className="flex items-center gap-1 font-mono font-semibold text-gray-900">
+                                <DollarSign size={11} className="text-gray-400" />
+                                {formatRupiah(s.total_fee)}
+                              </span>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                          <div className="flex gap-1 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleDownloadServicePDF(s)}
+                              disabled={pdfLoading === s.id}
+                            >
+                              {pdfLoading === s.id ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Download size={14} />
+                              )}
+                            </Button>
+                            <Link href={`/servis/${s.id}`}>
+                              <Button variant="ghost" size="sm" className="h-8 px-2 text-xs">
+                                Detail
+                              </Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
                     ))
                   )}
                 </div>
               )}
 
-              {/* Sales History */}
+              {/* Sales History — Premium Cards */}
               {tab === 'penjualan' && (
                 <div className="space-y-2">
                   {sales.length === 0 ? (
-                    <Card className="shadow-card">
-                      <CardContent className="p-6 text-center">
-                        <p className="text-sm text-muted-foreground">Belum ada riwayat penjualan</p>
-                      </CardContent>
-                    </Card>
+                    <div className="rounded-2xl border border-hairline bg-gray-50/50 p-8 text-center">
+                      <ShoppingCart size={28} className="mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm text-muted-foreground">Belum ada riwayat penjualan</p>
+                    </div>
                   ) : (
                     sales.map(s => (
-                      <Card key={s.id} className="shadow-card hover:bg-muted/50 transition-colors">
-                        <CardContent className="p-3 sm:p-4">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <p className="text-sm font-mono font-semibold text-foreground">{s.invoice_number}</p>
-                                <Badge variant={getStatusColor(s.status)} className="text-[10px] px-1.5 py-0.5">
-                                  {getStatusLabel(s.status)}
-                                </Badge>
-                                <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
-                                  {s.item_type === 'unit' ? 'Unit' : 'Sparepart'}
-                                </Badge>
-                              </div>
-                              <p className="text-sm font-medium text-foreground">
-                                {s.products ? `${s.products.brand} ${s.products.model}` : s.item_name || '-'}
-                              </p>
-                              {s.products?.specs && (
-                                <p className="text-xs text-muted-foreground mt-0.5">{s.products.specs}</p>
-                              )}
-                              <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                                <span className="flex items-center gap-1">
-                                  <Calendar size={11} />
-                                  {formatDate(s.date)}
-                                </span>
-                                <span className="flex items-center gap-1">
-                                  <DollarSign size={11} />
-                                  {formatRupiah(s.sell_price)}
-                                </span>
-                              </div>
+                      <div key={s.id} className="rounded-xl border border-hairline bg-white p-3.5 transition-colors hover:border-hairline-strong">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <p className="text-xs font-mono font-semibold text-gray-900">{s.invoice_number}</p>
+                              <Badge variant={getStatusColor(s.status)} className="text-[10px] px-1.5 py-0.5">
+                                {getStatusLabel(s.status)}
+                              </Badge>
+                              <Badge variant="secondary" className="text-[10px] px-1.5 py-0.5">
+                                {s.item_type === 'unit' ? 'Unit' : 'Sparepart'}
+                              </Badge>
                             </div>
-                            <div className="flex gap-1 shrink-0">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0"
-                                onClick={() => handleDownloadSalePDF(s)}
-                                disabled={pdfLoading === s.id}
-                              >
-                                {pdfLoading === s.id ? (
-                                  <Loader2 size={14} className="animate-spin" />
-                                ) : (
-                                  <Download size={14} />
-                                )}
-                              </Button>
+                            <p className="text-sm font-semibold text-gray-900">
+                              {s.products ? `${s.products.brand} ${s.products.model}` : s.item_name || '-'}
+                            </p>
+                            {s.products?.specs && (
+                              <p className="text-xs text-gray-400 mt-0.5">{s.products.specs}</p>
+                            )}
+                            <div className="flex items-center gap-3 mt-2.5 text-xs">
+                              <span className="flex items-center gap-1 text-gray-500">
+                                <Calendar size={11} />
+                                {formatDate(s.date)}
+                              </span>
+                              <span className="flex items-center gap-1 font-mono font-semibold text-gray-900">
+                                <DollarSign size={11} className="text-gray-400" />
+                                {formatRupiah(s.sell_price)}
+                              </span>
                             </div>
                           </div>
-                        </CardContent>
-                      </Card>
+                          <div className="flex gap-1 shrink-0">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0"
+                              onClick={() => handleDownloadSalePDF(s)}
+                              disabled={pdfLoading === s.id}
+                            >
+                              {pdfLoading === s.id ? (
+                                <Loader2 size={14} className="animate-spin" />
+                              ) : (
+                                <Download size={14} />
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
                     ))
                   )}
                 </div>
