@@ -25,19 +25,28 @@ CREATE TABLE public.profiles (
 -- Enable RLS
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- SECURITY DEFINER function to check admin role without RLS recursion
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+$$;
+
 -- Policies untuk profiles
 CREATE POLICY "Users can view own profile" ON public.profiles
   FOR SELECT USING (auth.uid() = id);
 
 CREATE POLICY "Admin can view all profiles" ON public.profiles
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  FOR SELECT USING (public.is_admin());
 
 CREATE POLICY "Admin can update profiles" ON public.profiles
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
-  );
+  FOR UPDATE USING (public.is_admin());
 
 CREATE POLICY "Authenticated users can insert profiles" ON public.profiles
   FOR INSERT WITH CHECK (auth.role() = 'authenticated');
@@ -62,7 +71,7 @@ CREATE POLICY "Authenticated users can view categories" ON public.categories
 
 CREATE POLICY "Admin can manage categories" ON public.categories
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- Seed categories
@@ -106,7 +115,7 @@ CREATE POLICY "Authenticated users can view products" ON public.products
 
 CREATE POLICY "Admin can manage products" ON public.products
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- ============================================
@@ -227,12 +236,12 @@ ALTER TABLE public.purchases ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin can view purchases" ON public.purchases
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can create purchases" ON public.purchases
   FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- ============================================
@@ -266,12 +275,12 @@ ALTER TABLE public.sales ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin can view sales" ON public.sales
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can create sales" ON public.sales
   FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- ============================================
@@ -294,12 +303,12 @@ ALTER TABLE public.operational_costs ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin can view operational costs" ON public.operational_costs
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can manage operational costs" ON public.operational_costs
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- ============================================
@@ -410,6 +419,8 @@ GROUP BY year, month;
 CREATE OR REPLACE FUNCTION public.get_my_role()
 RETURNS text
 LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
 STABLE
 AS $$
   SELECT role FROM public.profiles WHERE id = auth.uid();
@@ -503,7 +514,7 @@ CREATE POLICY "Authenticated users can view payment methods" ON public.payment_m
 
 CREATE POLICY "Admin can manage payment methods" ON public.payment_methods
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- Seed default payment methods
@@ -550,7 +561,7 @@ CREATE POLICY "Authenticated users can view categories" ON public.categories
 DROP POLICY IF EXISTS "Admin can manage categories" ON public.categories;
 CREATE POLICY "Admin can manage categories" ON public.categories
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- ============================================
@@ -587,17 +598,17 @@ ALTER TABLE public.sparepart_purchases ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin can view sparepart purchases" ON public.sparepart_purchases
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can create sparepart purchases" ON public.sparepart_purchases
   FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can delete sparepart purchases" ON public.sparepart_purchases
   FOR DELETE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- 2. Tambah nilai reference_type untuk mutasi stok masuk pembelian sparepart
@@ -973,27 +984,27 @@ ALTER TABLE public.supplier_receipt_items ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Admin can view supplier receipts" ON public.supplier_receipts
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can create supplier receipts" ON public.supplier_receipts
   FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can update supplier receipts" ON public.supplier_receipts
   FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can view supplier receipt items" ON public.supplier_receipt_items
   FOR SELECT USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 CREATE POLICY "Admin can create supplier receipt items" ON public.supplier_receipt_items
   FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+    public.is_admin()
   );
 
 -- 5. Referensi balik: tandai baris pembelian (sparepart_purchases & purchases)
