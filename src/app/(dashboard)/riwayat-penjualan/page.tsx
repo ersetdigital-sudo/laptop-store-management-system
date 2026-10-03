@@ -202,6 +202,7 @@ export default function RiwayatPenjualanPage() {
             value={String(totalTransaksi)}
             icon={ShoppingCart}
             color="sky"
+            compact
           />
           <StatCard
             title="Unit Laptop"
@@ -209,6 +210,7 @@ export default function RiwayatPenjualanPage() {
             sub={formatRupiah(totalUnitRp)}
             icon={Laptop}
             color="emerald"
+            compact
           />
           <StatCard
             title="Sparepart"
@@ -216,6 +218,7 @@ export default function RiwayatPenjualanPage() {
             sub={formatRupiah(totalSparepartRp)}
             icon={Package}
             color="orange"
+            compact
           />
         </div>
       </div>
