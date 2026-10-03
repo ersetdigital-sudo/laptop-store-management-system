@@ -9,6 +9,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { RupiahInput } from '@/components/ui/rupiah-input'
+import { ProductAutocomplete } from '@/components/ui/product-autocomplete'
+import type { Product } from '@/lib/supabase'
 import { NotaMultiPDF } from '@/components/pdf/nota-multi'
 import { downloadPDF } from '@/components/pdf/utils'
 
@@ -453,7 +455,20 @@ export default function BuatKwitansiPage() {
                       <div className="space-y-3">
                         <div>
                           <label className={labelClass}>Nama Barang *</label>
-                          <Input type="text" value={item.name} onChange={e => updateItem(item.key, { name: e.target.value })} placeholder="RAM DDR4 8GB" className="h-10 w-full" />
+                          <ProductAutocomplete
+                            value={item.name}
+                            onChange={val => updateItem(item.key, { name: val })}
+                            onSelect={(p: Product) => updateItem(item.key, {
+                              name: p.name,
+                              specs: p.specs || '',
+                              condition: p.condition || 'baru',
+                              buy_price: p.buy_price || 0,
+                              sell_price: p.sell_price || 0,
+                            })}
+                            placeholder="RAM DDR4 8GB"
+                            required
+                            className="h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+                          />
                         </div>
                         <div>
                           <label className={labelClass}>Spesifikasi</label>

@@ -9,6 +9,8 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { RupiahInput } from '@/components/ui/rupiah-input'
+import { ProductAutocomplete } from '@/components/ui/product-autocomplete'
+import type { Product } from '@/lib/supabase'
 
 const labelClass = 'mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground'
 const selectClass = 'h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20'
@@ -121,7 +123,21 @@ export default function BeliSparepartPage() {
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                   <label className={labelClass}>Nama Sparepart *</label>
-                  <Input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="RAM DDR4 8GB" className="h-10 w-full" />
+                  <ProductAutocomplete
+                    value={form.name}
+                    onChange={val => setForm({ ...form, name: val })}
+                    onSelect={(p: Product) => setForm(f => ({
+                      ...f,
+                      name: p.name,
+                      specs: p.specs || '',
+                      condition: p.condition || 'baru',
+                      buy_price: p.buy_price || 0,
+                      sell_price: p.sell_price || 0,
+                    }))}
+                    placeholder="RAM DDR4 8GB"
+                    required
+                    className="h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+                  />
                 </div>
                 <div>
                   <label className={labelClass}>Kategori *</label>
