@@ -152,10 +152,10 @@ export default function RiwayatKwitansiPage() {
   const periodLabel = `${months[month - 1]} ${year}`
 
   const summaryCards = [
-    { label: 'Total Kwitansi', value: receipts.length, subtext: 'Kwitansi tercatat', icon: FileText, iconColor: 'text-[#04123F]', iconBg: 'bg-blue-50' },
-    { label: 'Total Item', value: totalItems, subtext: 'Item dibeli', icon: Package, iconColor: 'text-emerald-600', iconBg: 'bg-emerald-50' },
-    { label: 'Supplier', value: new Set(receipts.map(r => r.supplier_name)).size, subtext: 'Supplier aktif', icon: User, iconColor: 'text-purple-600', iconBg: 'bg-purple-50' },
-    { label: 'Total Pengeluaran', value: formatRupiah(totalAmount), subtext: 'Total pembelian', icon: DollarSign, iconColor: 'text-[#FEC40B]', iconBg: 'bg-amber-50', financial: true },
+    { label: 'Total Kwitansi', value: String(receipts.length), badge: 'bulan ini', icon: FileText, dark: true },
+    { label: 'Total Item', value: String(totalItems), badge: 'item dibeli', icon: Package, dark: false },
+    { label: 'Supplier', value: String(new Set(receipts.map(r => r.supplier_name)).size), badge: 'aktif', icon: User, dark: false },
+    { label: 'Total Pengeluaran', value: formatRupiah(totalAmount), badge: 'total pembelian', icon: DollarSign, dark: false, financial: true },
   ]
 
   async function handleDownloadPDF(receipt: ReceiptWithItems) {
@@ -198,11 +198,11 @@ export default function RiwayatKwitansiPage() {
       <div className="space-y-4">
         <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
         <div className="grid grid-cols-3 gap-2.5 lg:hidden">
-          {[...Array(3)].map((_, i) => <div key={i} className="h-20 animate-pulse rounded-2xl bg-muted" />)}
+          {[...Array(3)].map((_, i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />)}
         </div>
-        <div className="h-16 animate-pulse rounded-2xl bg-muted lg:hidden" />
+        <div className="h-20 animate-pulse rounded-2xl bg-muted lg:hidden" />
         <div className="hidden gap-4 lg:grid lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />)}
+          {[...Array(4)].map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted" />)}
         </div>
         <div className="h-64 animate-pulse rounded-2xl bg-muted" />
       </div>
@@ -236,51 +236,48 @@ export default function RiwayatKwitansiPage() {
         </div>
       </PageHeader>
 
-      {/* Summary Cards — Mobile: 3-col compact + full-width financial; Desktop: 4-col */}
-      {/* Mobile 3-column cards */}
+      {/* Summary Cards — Modern premium with dark hero card */}
+      {/* Mobile: 3-col compact + full-width financial */}
       <div className="grid grid-cols-3 gap-2.5 lg:hidden">
         {summaryCards.slice(0, 3).map(card => (
-          <div key={card.label} className="card-premium p-3">
-            <div className={`mb-2 grid h-8 w-8 shrink-0 place-items-center rounded-lg ${card.iconBg}`}>
-              <card.icon size={15} className={card.iconColor} strokeWidth={2} />
+          <div key={card.label} className={`rounded-2xl p-3 shadow-sm ${card.dark ? 'bg-[#04123F]' : 'bg-white border border-hairline'}`}>
+            <div className={`mb-2 grid h-7 w-7 shrink-0 place-items-center rounded-lg ${card.dark ? 'bg-white/10' : 'bg-gray-100'}`}>
+              <card.icon size={14} className={card.dark ? 'text-white' : 'text-gray-500'} strokeWidth={2} />
             </div>
-            <p className="text-[8px] font-semibold uppercase tracking-wide text-muted-foreground leading-tight truncate">{card.label}</p>
-            <p className="mt-0.5 font-bold leading-tight text-lg text-ink">{card.value}</p>
-            <p className="mt-0.5 text-[9px] text-muted-foreground leading-tight truncate">{card.subtext}</p>
+            <p className={`text-[8px] font-semibold uppercase tracking-wide leading-tight truncate ${card.dark ? 'text-white/70' : 'text-gray-500'}`}>{card.label}</p>
+            <p className={`mt-0.5 font-bold leading-tight text-lg ${card.dark ? 'text-white' : 'text-gray-900'}`}>{card.value}</p>
+            <span className={`mt-1 inline-block rounded-full px-1.5 py-0.5 text-[8px] font-medium leading-tight ${card.dark ? 'bg-white/10 text-white/80' : 'bg-gray-100 text-gray-500'}`}>{card.badge}</span>
           </div>
         ))}
       </div>
-      {/* Mobile full-width financial card */}
       <div className="lg:hidden">
         {summaryCards.slice(3).map(card => (
-          <div key={card.label} className="card-premium p-4">
+          <div key={card.label} className="rounded-2xl border border-hairline bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${card.iconBg}`}>
-                <card.icon size={18} className={card.iconColor} strokeWidth={2} />
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50">
+                <card.icon size={18} className="text-amber-600" strokeWidth={2} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
-                <p className="mt-0.5 font-bold leading-tight text-base text-amber-600">{card.value}</p>
-                <p className="mt-0.5 text-[11px] text-muted-foreground">{card.subtext}</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">{card.label}</p>
+                <p className="mt-0.5 font-bold leading-tight text-base text-gray-900">{card.value}</p>
               </div>
+              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">{card.badge}</span>
             </div>
           </div>
         ))}
       </div>
-      {/* Desktop 4-column grid */}
+      {/* Desktop: 4-col grid */}
       <div className="hidden gap-4 lg:grid lg:grid-cols-4">
         {summaryCards.map(card => (
-          <div key={card.label} className="card-premium h-full p-5 transition-transform duration-200 hover:-translate-y-0.5">
-            <div className="flex items-start gap-3">
-              <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl ${card.iconBg}`}>
-                <card.icon size={18} className={card.iconColor} strokeWidth={2} />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{card.label}</p>
-                <p className={`mt-0.5 font-bold leading-tight ${card.financial ? 'text-xl text-amber-600' : 'text-2xl text-ink'}`}>{card.value}</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">{card.subtext}</p>
+          <div key={card.label} className={`rounded-2xl p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 ${card.dark ? 'bg-[#04123F]' : 'bg-white border border-hairline'}`}>
+            <div className="flex items-start justify-between mb-3">
+              <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${card.dark ? 'bg-white/10' : card.financial ? 'bg-amber-50' : 'bg-gray-100'}`}>
+                <card.icon size={18} className={card.dark ? 'text-white' : card.financial ? 'text-amber-600' : 'text-gray-500'} strokeWidth={2} />
               </div>
             </div>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider ${card.dark ? 'text-white/70' : 'text-gray-500'}`}>{card.label}</p>
+            <p className={`mt-1 font-bold leading-tight ${card.dark ? 'text-white' : card.financial ? 'text-xl text-amber-600' : 'text-2xl text-gray-900'}`}>{card.value}</p>
+            <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${card.dark ? 'bg-white/10 text-white/80' : card.financial ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>{card.badge}</span>
           </div>
         ))}
       </div>
