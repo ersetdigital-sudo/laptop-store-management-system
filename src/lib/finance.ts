@@ -60,7 +60,7 @@ export async function fetchFinanceData(period: FinancePeriod): Promise<FinancePe
     invoice_number: s.invoice_number,
     buyer_name: s.buyer_name,
     product_id: s.product_id,
-    product_name: s.item_name || s.products?.name || '',
+    product_name: s.item_name || s.products?.[0]?.name || '',
     item_type: s.item_type || 'unit',
     quantity: s.quantity ?? 1,
     sell_price: s.sell_price,
