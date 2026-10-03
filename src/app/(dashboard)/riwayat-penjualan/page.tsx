@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase, Sale, Product, SaleItem } from '@/lib/supabase'
-import { Search, Eye, Download, ShoppingCart, Laptop, Package, DollarSign, Trash2 } from 'lucide-react'
+import { Search, Eye, Download, ShoppingCart, Laptop, Package, DollarSign, Trash2, Calendar, User, Receipt, CreditCard, ShieldCheck } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -189,7 +189,7 @@ export default function RiwayatPenjualanPage() {
       <PageHeader title="Riwayat Penjualan" subtitle="Semua transaksi penjualan unit laptop dan sparepart" />
 
       {/* Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="space-y-3 lg:grid lg:grid-cols-4 lg:gap-3 lg:space-y-0">
         <StatCard
           title="Total Penjualan"
           value={formatRupiah(totalPenjualan)}
@@ -353,66 +353,116 @@ export default function RiwayatPenjualanPage() {
         </Card>
       )}
 
-      {/* Detail Modal */}
+      {/* Detail Modal — Modern */}
       {detailSale && (
         <Modal title={`Detail Transaksi ${detailSale.invoice_number}`} onClose={() => setDetailSale(null)} maxWidth="md">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div><p className="text-[10px] uppercase tracking-wide text-muted-foreground">No. Invoice</p><p className="font-semibold text-foreground font-mono">{detailSale.invoice_number}</p></div>
-              <div><p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tanggal</p><p className="font-semibold text-foreground">{new Date(detailSale.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p></div>
-              <div><p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tipe</p><Badge variant={detailSale.sale_items && detailSale.sale_items.length > 0 ? 'info' : detailSale.item_type === 'unit' ? 'default' : 'secondary'} className="text-[10px]">{detailSale.sale_items && detailSale.sale_items.length > 0 ? 'Multi-Item' : detailSale.item_type === 'unit' ? 'Unit Laptop' : 'Sparepart'}</Badge></div>
-              <div><p className="text-[10px] uppercase tracking-wide text-muted-foreground">Metode Bayar</p><p className="font-semibold text-foreground">{detailSale.payment_method}</p></div>
+            {/* Info Section — Clean labeled rows */}
+            <div className="rounded-2xl border border-hairline bg-gray-50/50 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Receipt size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">No. Invoice</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900 font-mono">{detailSale.invoice_number}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Tanggal</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900">{new Date(detailSale.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Package size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Tipe</span>
+                </div>
+                <Badge variant={detailSale.sale_items && detailSale.sale_items.length > 0 ? 'info' : detailSale.item_type === 'unit' ? 'default' : 'secondary'} className="text-[10px]">{detailSale.sale_items && detailSale.sale_items.length > 0 ? 'Multi-Item' : detailSale.item_type === 'unit' ? 'Unit Laptop' : 'Sparepart'}</Badge>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <CreditCard size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Metode Bayar</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900">{detailSale.payment_method}</span>
+              </div>
             </div>
 
-            <div className="border-t border-border pt-3">
-              <h4 className="text-xs font-bold text-foreground mb-2">Detail Barang</h4>
+            {/* Items Section */}
+            <div>
+              <h4 className="mb-2.5 text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                <Package size={14} className="text-gray-400" />
+                Detail Barang
+                {detailSale.sale_items && detailSale.sale_items.length > 0 && (
+                  <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">{detailSale.sale_items.length} item</span>
+                )}
+              </h4>
               {detailSale.sale_items && detailSale.sale_items.length > 0 ? (
                 <div className="space-y-2">
                   {detailSale.sale_items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-center text-sm p-2 rounded bg-secondary/50">
-                      <div>
-                        <p className="font-medium text-foreground">{item.item_name}</p>
-                        <p className="text-[10px] text-muted-foreground">{item.item_type === 'unit' ? 'Unit' : 'Sparepart'} x{item.quantity}</p>
+                    <div key={idx} className="rounded-xl border border-hairline bg-white p-3">
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-semibold text-gray-900 truncate">{item.item_name}</p>
+                          <p className="text-[10px] text-gray-400">{item.item_type === 'unit' ? 'Unit' : 'Sparepart'} × {item.quantity}</p>
+                        </div>
                       </div>
-                      <p className="font-mono font-semibold text-foreground">{formatRupiah(item.sell_price * item.quantity)}</p>
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-gray-500">{item.quantity} × {formatRupiah(item.sell_price)}</span>
+                        <span className="font-mono font-semibold text-gray-900">{formatRupiah(item.sell_price * item.quantity)}</span>
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div><p className="text-[10px] text-muted-foreground">Nama</p><p className="font-medium text-foreground">{detailSale.item_name || '-'}</p></div>
-                  {detailSale.item_type === 'sparepart' && <div><p className="text-[10px] text-muted-foreground">Qty</p><p className="font-medium text-foreground">{detailSale.quantity}</p></div>}
+                <div className="rounded-xl border border-hairline bg-white p-3">
+                  <p className="text-xs font-semibold text-gray-900">{detailSale.item_name || '-'}</p>
+                  {detailSale.item_type === 'sparepart' && <p className="text-[10px] text-gray-400 mt-0.5">Qty: {detailSale.quantity}</p>}
                 </div>
               )}
             </div>
 
-            <div className="border-t border-border pt-3">
-              <h4 className="text-xs font-bold text-foreground mb-2">Data Pembeli</h4>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div><p className="text-[10px] text-muted-foreground">Nama</p><p className="font-medium text-foreground">{detailSale.buyer_name}</p></div>
-                <div><p className="text-[10px] text-muted-foreground">No. HP</p><p className="font-medium text-foreground">{detailSale.buyer_phone || '-'}</p></div>
+            {/* Buyer Section */}
+            <div className="rounded-2xl border border-hairline bg-gray-50/50 p-4 space-y-3">
+              <h4 className="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                <User size={14} className="text-gray-400" />
+                Data Pembeli
+              </h4>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">Nama</span>
+                <span className="text-xs font-semibold text-gray-900">{detailSale.buyer_name}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-500">No. HP</span>
+                <span className="text-xs font-semibold text-gray-900 font-mono">{detailSale.buyer_phone || '-'}</span>
               </div>
             </div>
 
-            <div className="border-t border-border pt-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Harga Jual</span>
-                <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(detailSale.sell_price)}</span>
-              </div>
-              {detailSale.item_type === 'unit' && detailSale.garansi && detailSale.garansi.toLowerCase() !== 'tanpa garansi' && (
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-sm text-muted-foreground">Garansi</span>
-                  <span className="text-sm font-medium text-foreground">{detailSale.garansi}</span>
+            {/* Total — Prominent */}
+            <div className="flex items-center justify-between rounded-2xl bg-[#04123F] px-4 py-3">
+              <span className="text-xs font-medium text-white/70">Total Penjualan</span>
+              <span className="font-mono text-lg font-bold text-[#FEC40B]">{formatRupiah(detailSale.sell_price)}</span>
+            </div>
+
+            {/* Warranty */}
+            {detailSale.item_type === 'unit' && detailSale.garansi && detailSale.garansi.toLowerCase() !== 'tanpa garansi' && (
+              <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50/50 p-3">
+                <ShieldCheck size={15} className="text-emerald-600 shrink-0" />
+                <div className="min-w-0">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-emerald-700">Garansi</p>
+                  <p className="text-xs text-gray-700">{detailSale.garansi}</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            <div className="flex gap-2 pt-2">
-              <Button onClick={() => handleDownloadPDF(detailSale)} disabled={pdfLoading === detailSale.id} variant="outline" className="flex-1 gap-2">
-                {pdfLoading === detailSale.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={14} />}
+            {/* Actions — Clean stacked */}
+            <div className="flex flex-col gap-2 pt-1">
+              <Button onClick={() => handleDownloadPDF(detailSale)} disabled={pdfLoading === detailSale.id} variant="outline" className="w-full gap-2 h-10">
+                {pdfLoading === detailSale.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={16} />}
                 Download PDF
               </Button>
-              <Button onClick={() => setDetailSale(null)} variant="secondary" className="flex-1">Tutup</Button>
+              <Button onClick={() => setDetailSale(null)} variant="secondary" className="w-full h-10">Tutup</Button>
             </div>
           </div>
         </Modal>

@@ -37,7 +37,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-[9999] flex flex-col gap-2" style={{ animation: 'toast-slide-in 0.3s ease-out' }}>
+    <div className="fixed top-4 right-4 z-[9999] flex flex-col gap-2 max-w-[calc(100vw-2rem)]" style={{ animation: 'toast-slide-in 0.3s ease-out' }}>
       {toasts.map(toast => (
         <div
           key={toast.id}

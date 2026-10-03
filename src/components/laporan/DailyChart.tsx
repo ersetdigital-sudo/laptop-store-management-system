@@ -30,25 +30,25 @@ export default function DailyChart({ data, title, subtitle }: DailyChartProps) {
           <AreaChart data={data} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
             <defs>
               <linearGradient id="gradOmzet" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#000000" stopOpacity={0.16} />
-                <stop offset="100%" stopColor="#000000" stopOpacity={0.02} />
+                <stop offset="0%" stopColor="#04123F" stopOpacity={0.18} />
+                <stop offset="100%" stopColor="#04123F" stopOpacity={0.02} />
               </linearGradient>
               <linearGradient id="gradProfit" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#34d399" stopOpacity={0.28} />
-                <stop offset="100%" stopColor="#34d399" stopOpacity={0.03} />
+                <stop offset="0%" stopColor="#FEC40B" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="#FEC40B" stopOpacity={0.03} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#efefef" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
             <XAxis
               dataKey="date"
               tickFormatter={shortDate}
-              tick={{ fill: '#4b4b4b', fontSize: 11 }}
-              axisLine={{ stroke: '#efefef' }}
+              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              axisLine={{ stroke: '#f0f0f0' }}
             />
             <YAxis
               tickFormatter={formatRupiahShort}
-              tick={{ fill: '#4b4b4b', fontSize: 11 }}
-              axisLine={{ stroke: '#efefef' }}
+              tick={{ fill: '#9ca3af', fontSize: 11 }}
+              axisLine={{ stroke: '#f0f0f0' }}
             />
             <Tooltip
               formatter={(value) => `Rp ${Number(value).toLocaleString('id-ID')}`}
@@ -61,17 +61,19 @@ export default function DailyChart({ data, title, subtitle }: DailyChartProps) {
                 })
               }
               contentStyle={{
-                backgroundColor: '#ffffff',
+                backgroundColor: '#04123F',
                 border: 'none',
-                borderRadius: '8px',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.10), 0 2px 6px rgba(0,0,0,0.06)',
+                borderRadius: '10px',
+                boxShadow: '0 4px 12px rgba(4,18,63,0.25)',
                 fontSize: '11px',
+                color: '#fff',
               }}
-              labelStyle={{ color: '#000000', fontWeight: 700 }}
+              labelStyle={{ color: '#FEC40B', fontWeight: 700 }}
+              itemStyle={{ color: '#fff' }}
             />
             <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '8px' }} iconType="circle" />
-            <Area type="monotone" dataKey="omzet" name="Omzet" stroke="#000000" strokeWidth={2} fill="url(#gradOmzet)" />
-            <Area type="monotone" dataKey="profit" name="Profit" stroke="#34d399" strokeWidth={2} fill="url(#gradProfit)" />
+            <Area type="monotone" dataKey="omzet" name="Omzet" stroke="#04123F" strokeWidth={2.5} fill="url(#gradOmzet)" />
+            <Area type="monotone" dataKey="profit" name="Profit" stroke="#FEC40B" strokeWidth={2.5} fill="url(#gradProfit)" />
           </AreaChart>
         </ResponsiveContainer>
       </CardContent>

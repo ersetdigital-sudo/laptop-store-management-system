@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { supabase, SupplierReceipt, SupplierReceiptItem } from '@/lib/supabase'
-import { Search, FileText, Plus, Eye, Download, XCircle, Trash2, ChevronLeft, ChevronRight, Package, User, DollarSign } from 'lucide-react'
-import { Card, CardContent } from '@/components/ui/card'
+import { Search, Plus, Eye, Download, XCircle, Trash2, ChevronLeft, ChevronRight, Package, User, DollarSign, FileText, Receipt, Calendar } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import PageHeader from '@/components/dashboard/PageHeader'
@@ -153,10 +152,10 @@ export default function RiwayatKwitansiPage() {
   const periodLabel = `${months[month - 1]} ${year}`
 
   const summaryCards = [
-    { label: 'Total Kwitansi', value: receipts.length, icon: FileText, color: 'text-badge-info' },
-    { label: 'Total Item', value: totalItems, icon: Package, color: 'text-badge-success' },
-    { label: 'Total Pengeluaran', value: formatRupiah(totalAmount), icon: DollarSign, color: 'text-badge-warning' },
-    { label: 'Supplier', value: new Set(receipts.map(r => r.supplier_name)).size, icon: User, color: 'text-badge-info' },
+    { label: 'Total Kwitansi', value: String(receipts.length), badge: 'bulan ini', icon: FileText, dark: true },
+    { label: 'Total Item', value: String(totalItems), badge: 'item dibeli', icon: Package, dark: false },
+    { label: 'Supplier', value: String(new Set(receipts.map(r => r.supplier_name)).size), badge: 'aktif', icon: User, dark: false },
+    { label: 'Total Pengeluaran', value: formatRupiah(totalAmount), badge: 'total pembelian', icon: DollarSign, dark: false, financial: true },
   ]
 
   async function handleDownloadPDF(receipt: ReceiptWithItems) {
@@ -196,147 +195,204 @@ export default function RiwayatKwitansiPage() {
 
   if (loading) {
     return (
-      <div className="space-y-3 sm:space-y-4">
+      <div className="space-y-4">
         <div className="h-8 w-48 animate-pulse rounded-lg bg-muted" />
-        <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => <div key={i} className="h-28 animate-pulse rounded-xl bg-muted" />)}
+        <div className="grid grid-cols-3 gap-2.5 lg:hidden">
+          {[...Array(3)].map((_, i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-muted" />)}
         </div>
+        <div className="h-20 animate-pulse rounded-2xl bg-muted lg:hidden" />
+        <div className="hidden gap-4 lg:grid lg:grid-cols-4">
+          {[...Array(4)].map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted" />)}
+        </div>
+        <div className="h-64 animate-pulse rounded-2xl bg-muted" />
       </div>
     )
   }
 
   return (
-    <div className="space-y-3 sm:space-y-4">
-      <PageHeader title="Riwayat Kwitansi Pembelian" subtitle="Daftar kwitansi pembelian dari supplier">
-        <Link href="/kwitansi/buat">
-          <Button className="gap-1.5 h-10 text-xs sm:text-sm">
-            <Plus size={14} strokeWidth={2} />
-            Buat Kwitansi Pembelian
+    <div className="space-y-4 sm:space-y-5">
+      <PageHeader title="Riwayat Kwitansi" subtitle="Daftar kwitansi pembelian dari supplier">
+        <Link href="/kwitansi/buat" className="w-full sm:w-auto">
+          <Button className="gap-1.5 h-10 w-full text-xs sm:text-sm shadow-sm sm:w-auto">
+            <Plus size={16} strokeWidth={2.5} />
+            Buat Kwitansi
           </Button>
         </Link>
         <div className="flex gap-2 w-full sm:w-auto">
           <select
             value={month}
             onChange={e => setFilterMonth(`${year}-${e.target.value.padStart(2, '0')}`)}
-            className="flex-1 sm:flex-none h-10 rounded-lg border border-hairline-strong bg-surface px-3 text-sm"
+            className="flex-1 h-10 rounded-xl border border-hairline-strong bg-surface px-3 text-sm font-medium sm:flex-none"
           >
             {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
           </select>
           <select
             value={year}
             onChange={e => setFilterMonth(`${e.target.value}-${String(month).padStart(2, '0')}`)}
-            className="flex-1 sm:flex-none h-10 rounded-lg border border-hairline-strong bg-surface px-3 text-sm"
+            className="flex-1 h-10 rounded-xl border border-hairline-strong bg-surface px-3 text-sm font-medium sm:flex-none"
           >
             {[2024, 2025, 2026, 2027].map(y => <option key={y} value={y}>{y}</option>)}
           </select>
         </div>
       </PageHeader>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
-        {summaryCards.map(card => (
-          <Card key={card.label} className="shadow-card">
-            <CardContent className="p-3 sm:p-4">
-              <div className="flex items-center gap-2">
-                <div className={`grid h-9 w-9 place-items-center rounded-lg bg-secondary/50 ${card.color}`}>
-                  <card.icon size={16} />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{card.label}</p>
-                  <p className="text-lg font-bold text-ink truncate">{card.value}</p>
-                </div>
+      {/* Summary Cards — Modern premium with dark hero card */}
+      {/* Mobile: 3-col compact + full-width financial */}
+      <div className="grid grid-cols-3 gap-2.5 lg:hidden">
+        {summaryCards.slice(0, 3).map(card => (
+          <div key={card.label} className={`rounded-2xl p-3 shadow-sm ${card.dark ? 'bg-[#04123F]' : 'bg-white border border-hairline'}`}>
+            <div className={`mb-2 grid h-7 w-7 shrink-0 place-items-center rounded-lg ${card.dark ? 'bg-white/10' : 'bg-gray-100'}`}>
+              <card.icon size={14} className={card.dark ? 'text-white' : 'text-gray-500'} strokeWidth={2} />
+            </div>
+            <p className={`text-[8px] font-semibold uppercase tracking-wide leading-tight truncate ${card.dark ? 'text-white/70' : 'text-gray-500'}`}>{card.label}</p>
+            <p className={`mt-0.5 font-bold leading-tight text-lg ${card.dark ? 'text-white' : 'text-gray-900'}`}>{card.value}</p>
+            <span className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium leading-tight ${card.dark ? 'bg-white/15 text-white' : 'bg-gray-100 text-gray-600'}`}>{card.badge}</span>
+          </div>
+        ))}
+      </div>
+      <div className="lg:hidden">
+        {summaryCards.slice(3).map(card => (
+          <div key={card.label} className="rounded-2xl border border-hairline bg-white p-4 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-50">
+                <card.icon size={18} className="text-amber-600" strokeWidth={2} />
               </div>
-            </CardContent>
-          </Card>
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">{card.label}</p>
+                <p className="mt-0.5 font-bold leading-tight text-base text-gray-900">{card.value}</p>
+              </div>
+              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-medium text-amber-700">{card.badge}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* Desktop: 4-col grid */}
+      <div className="hidden gap-4 lg:grid lg:grid-cols-4">
+        {summaryCards.map(card => (
+          <div key={card.label} className={`rounded-2xl p-5 shadow-sm transition-transform duration-200 hover:-translate-y-0.5 ${card.dark ? 'bg-[#04123F]' : 'bg-white border border-hairline'}`}>
+            <div className="flex items-start justify-between mb-3">
+              <div className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl ${card.dark ? 'bg-white/10' : card.financial ? 'bg-amber-50' : 'bg-gray-100'}`}>
+                <card.icon size={18} className={card.dark ? 'text-white' : card.financial ? 'text-amber-600' : 'text-gray-500'} strokeWidth={2} />
+              </div>
+            </div>
+            <p className={`text-[11px] font-semibold uppercase tracking-wider ${card.dark ? 'text-white/70' : 'text-gray-500'}`}>{card.label}</p>
+            <p className={`mt-1 font-bold leading-tight ${card.dark ? 'text-white' : card.financial ? 'text-xl text-amber-600' : 'text-2xl text-gray-900'}`}>{card.value}</p>
+            <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${card.dark ? 'bg-white/10 text-white/80' : card.financial ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>{card.badge}</span>
+          </div>
         ))}
       </div>
 
-      {/* Search */}
+      {/* Search Bar — Modern */}
       <div className="relative">
-        <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <input
           value={search}
           onChange={e => { setSearch(e.target.value); setCurrentPage(1) }}
           placeholder="Cari no. kwitansi, supplier, catatan…"
-          className="h-11 w-full rounded-xl border border-hairline-strong bg-surface pl-10 pr-3 text-sm text-ink outline-none transition-colors placeholder:text-muted-foreground focus:border-primary"
+          className="h-12 w-full rounded-xl border border-hairline-strong bg-surface pl-11 pr-4 text-sm text-ink outline-none transition-all placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/10"
         />
       </div>
 
-      {/* Mobile Cards */}
-      <div className="block divide-y divide-hairline rounded-xl border border-hairline bg-surface-card shadow-card lg:hidden">
+      {/* Period Badge */}
+      <div className="flex items-center gap-2">
+        <Calendar size={14} className="text-muted-foreground" />
+        <span className="text-xs font-medium text-muted-foreground">Periode: {periodLabel}</span>
+      </div>
+
+      {/* Mobile Cards — Modern */}
+      <div className="space-y-3 lg:hidden">
         {paginated.length === 0 ? (
-          <div className="p-6 text-center text-sm text-muted-foreground">Belum ada kwitansi di {periodLabel}</div>
+          <div className="card-premium p-8 text-center">
+            <Receipt size={32} className="mx-auto mb-2 text-muted-foreground/40" />
+            <p className="text-sm text-muted-foreground">Belum ada kwitansi di {periodLabel}</p>
+          </div>
         ) : paginated.map(r => (
-          <div key={r.id} onClick={() => setDetailReceipt(r)} className="p-3 space-y-2 cursor-pointer hover:bg-secondary/30 transition-colors">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <p className="text-sm font-semibold text-ink font-mono">{r.receipt_number}</p>
-                <Badge variant={r.status === 'selesai' ? 'success' : 'destructive'} className="text-[10px] px-2 py-0.5 capitalize">{r.status}</Badge>
+          <div key={r.id} className="card-premium p-4 cursor-pointer hover:shadow-card-hover transition-all" onClick={() => setDetailReceipt(r)}>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <p className="text-sm font-bold text-ink font-mono truncate">{r.receipt_number}</p>
+                  <Badge variant={r.status === 'selesai' ? 'success' : 'destructive'} className="text-[9px] px-1.5 py-0 capitalize shrink-0">{r.status}</Badge>
+                </div>
+                <p className="text-xs font-medium text-foreground truncate">{r.supplier_name}</p>
+                {r.supplier_phone && <p className="text-[10px] text-muted-foreground font-mono">{r.supplier_phone}</p>}
               </div>
               <button
                 onClick={(e) => { e.stopPropagation(); setDeleteConfirm(r) }}
-                className="h-6 w-6 flex items-center justify-center rounded text-destructive hover:bg-destructive/10"
+                className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg text-destructive hover:bg-destructive/10 transition-colors"
                 title="Hapus Kwitansi"
               >
-                <Trash2 size={12} />
+                <Trash2 size={14} />
               </button>
             </div>
-            <p className="text-xs text-muted-foreground truncate">Supplier: {r.supplier_name}</p>
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>{new Date(r.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {(r.supplier_receipt_items || []).length} item</span>
-              <span className="font-mono font-bold text-badge-warning">{formatRupiah(r.total)}</span>
+            <div className="flex items-center justify-between pt-2 border-t border-hairline">
+              <span className="text-[11px] text-muted-foreground">
+                {new Date(r.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {(r.supplier_receipt_items || []).length} item
+              </span>
+              <span className="font-mono text-sm font-bold text-amber-600">{formatRupiah(r.total)}</span>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden lg:block rounded-xl border border-hairline bg-surface-card shadow-card">
+      {/* Desktop Table — Modern */}
+      <div className="hidden lg:block card-premium overflow-hidden">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-hairline bg-secondary/30 text-left text-xs text-ash">
-              <th className="px-4 py-2.5 font-medium">No. Kwitansi</th>
-              <th className="px-4 py-2.5 font-medium">Tanggal</th>
-              <th className="px-4 py-2.5 font-medium">Supplier</th>
-              <th className="px-4 py-2.5 font-medium text-center">Item</th>
-              <th className="px-4 py-2.5 font-medium text-right">Total</th>
-              <th className="px-4 py-2.5 font-medium text-center">Status</th>
-              <th className="px-4 py-2.5 font-medium text-center">Aksi</th>
+            <tr className="border-b border-hairline bg-secondary/40 text-left text-[11px] uppercase tracking-wider text-ash">
+              <th className="px-5 py-3 font-semibold">No. Kwitansi</th>
+              <th className="px-5 py-3 font-semibold">Tanggal</th>
+              <th className="px-5 py-3 font-semibold">Supplier</th>
+              <th className="px-5 py-3 font-semibold text-center">Item</th>
+              <th className="px-5 py-3 font-semibold text-right">Total</th>
+              <th className="px-5 py-3 font-semibold text-center">Status</th>
+              <th className="px-5 py-3 font-semibold text-center">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-hairline">
             {paginated.length === 0 ? (
-              <tr><td colSpan={7} className="p-8 text-center text-xs text-muted-foreground">Belum ada kwitansi di {periodLabel}</td></tr>
+              <tr><td colSpan={7} className="p-12 text-center">
+                <Receipt size={32} className="mx-auto mb-2 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">Belum ada kwitansi di {periodLabel}</p>
+              </td></tr>
             ) : paginated.map(r => (
-              <tr key={r.id} className="transition-colors hover:bg-secondary/40">
-                <td className="px-4 py-3 font-mono text-xs font-semibold text-ink">{r.receipt_number}</td>
-                <td className="px-4 py-3 text-xs text-muted-foreground whitespace-nowrap">
+              <tr key={r.id} className="transition-colors hover:bg-secondary/30">
+                <td className="px-5 py-3.5">
+                  <p className="font-mono text-xs font-bold text-ink">{r.receipt_number}</p>
+                </td>
+                <td className="px-5 py-3.5 text-xs text-muted-foreground whitespace-nowrap">
                   {new Date(r.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   <p className="text-xs font-medium text-ink">{r.supplier_name}</p>
-                  {r.supplier_phone && <p className="text-[10px] text-muted-foreground">{r.supplier_phone}</p>}
+                  {r.supplier_phone && <p className="text-[10px] text-muted-foreground font-mono">{r.supplier_phone}</p>}
                 </td>
-                <td className="px-4 py-3 text-center text-xs">{(r.supplier_receipt_items || []).length} item</td>
-                <td className="px-4 py-3 text-right font-semibold text-badge-warning">{formatRupiah(r.total)}</td>
-                <td className="px-4 py-3 text-center">
+                <td className="px-5 py-3.5 text-center">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-medium text-ash">
+                    <Package size={11} /> {(r.supplier_receipt_items || []).length}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5 text-right">
+                  <span className="font-mono text-sm font-bold text-amber-600">{formatRupiah(r.total)}</span>
+                </td>
+                <td className="px-5 py-3.5 text-center">
                   <Badge variant={r.status === 'selesai' ? 'success' : 'destructive'} className="text-[10px] px-2 py-0.5 capitalize">{r.status}</Badge>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-5 py-3.5">
                   <div className="flex gap-1 justify-center">
-                    <button onClick={() => setDetailReceipt(r)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-ink hover:bg-secondary/60 transition-colors" title="Detail">
-                      <Eye size={15} />
+                    <button onClick={() => setDetailReceipt(r)} className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:text-ink hover:bg-secondary/60 transition-colors" title="Detail">
+                      <Eye size={16} />
                     </button>
-                    <button onClick={() => handleDownloadPDF(r)} disabled={pdfLoading === r.id} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-ink hover:bg-secondary/60 transition-colors" title="Download PDF">
-                      {pdfLoading === r.id ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={15} />}
+                    <button onClick={() => handleDownloadPDF(r)} disabled={pdfLoading === r.id} className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-muted-foreground hover:text-ink hover:bg-secondary/60 transition-colors" title="Download PDF">
+                      {pdfLoading === r.id ? <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={16} />}
                     </button>
                     {r.status === 'selesai' && (
-                      <button onClick={() => setCancelConfirm(r)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Batalkan Kwitansi">
-                        <XCircle size={15} />
+                      <button onClick={() => setCancelConfirm(r)} className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-amber-600 hover:bg-amber-50 transition-colors" title="Batalkan Kwitansi">
+                        <XCircle size={16} />
                       </button>
                     )}
-                    <button onClick={() => setDeleteConfirm(r)} className="inline-flex items-center justify-center h-8 w-8 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Hapus Kwitansi">
-                      <Trash2 size={15} />
+                    <button onClick={() => setDeleteConfirm(r)} className="inline-flex items-center justify-center h-9 w-9 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Hapus Kwitansi">
+                      <Trash2 size={16} />
                     </button>
                   </div>
                 </td>
@@ -363,36 +419,75 @@ export default function RiwayatKwitansiPage() {
         </div>
       )}
 
-      {/* Detail Modal */}
+      {/* Detail Modal — Modern */}
       {detailReceipt && (
         <Modal title={`Detail Kwitansi ${detailReceipt.receipt_number}`} onClose={() => setDetailReceipt(null)} maxWidth="lg">
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Tanggal</p>
-                <p className="font-semibold text-foreground">{new Date(detailReceipt.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            {/* Info Section — Clean labeled rows */}
+            <div className="rounded-2xl border border-hairline bg-gray-50/50 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Tanggal</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900">{new Date(detailReceipt.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Status</p>
-                <Badge variant={detailReceipt.status === 'selesai' ? 'success' : 'destructive'} className="capitalize">{detailReceipt.status}</Badge>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <User size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Supplier</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-semibold text-gray-900">{detailReceipt.supplier_name}</span>
+                  {detailReceipt.supplier_phone && <p className="text-[10px] text-gray-400 font-mono">{detailReceipt.supplier_phone}</p>}
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Supplier</p>
-                <p className="font-semibold text-foreground">{detailReceipt.supplier_name}</p>
-                {detailReceipt.supplier_phone && <p className="text-xs text-muted-foreground">{detailReceipt.supplier_phone}</p>}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <DollarSign size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Metode Bayar</span>
+                </div>
+                <span className="text-xs font-semibold text-gray-900">{detailReceipt.payment_method}</span>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Metode Bayar</p>
-                <p className="font-semibold text-foreground">{detailReceipt.payment_method}</p>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Receipt size={15} className="text-gray-400" />
+                  <span className="text-xs text-gray-500">Status</span>
+                </div>
+                <Badge variant={detailReceipt.status === 'selesai' ? 'success' : 'destructive'} className="text-[10px] capitalize">{detailReceipt.status}</Badge>
               </div>
             </div>
 
-            <div className="border-t border-border pt-3">
-              <h4 className="mb-2 text-xs font-bold text-foreground">Item Pembelian</h4>
-              <div className="overflow-x-auto rounded-lg border border-border">
+            {/* Items Section — Card list on mobile, table on desktop */}
+            <div>
+              <h4 className="mb-2.5 text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                <Package size={14} className="text-gray-400" />
+                Item Pembelian
+                <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500">{(detailReceipt.supplier_receipt_items || []).length} item</span>
+              </h4>
+              {/* Mobile cards */}
+              <div className="space-y-2 lg:hidden">
+                {(detailReceipt.supplier_receipt_items || []).map((item, idx) => (
+                  <div key={item.id} className="rounded-xl border border-hairline bg-white p-3">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-semibold text-gray-900 truncate">{item.item_name}</p>
+                        {item.specs && <p className="text-[10px] text-gray-400 truncate">{item.specs}</p>}
+                      </div>
+                      <Badge variant={item.item_type === 'unit' ? 'default' : 'secondary'} className="text-[9px] px-1.5 py-0 capitalize shrink-0">{item.item_type}</Badge>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-gray-500">{item.quantity} × {formatRupiah(item.buy_price)}</span>
+                      <span className="font-mono font-semibold text-gray-900">{formatRupiah(item.subtotal)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {/* Desktop table */}
+              <div className="hidden overflow-x-auto rounded-lg border border-hairline lg:block">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-secondary/30 text-left text-[10px] uppercase tracking-wide text-ash">
+                    <tr className="border-b border-hairline bg-gray-50 text-left text-[10px] uppercase tracking-wide text-gray-500">
                       <th className="px-3 py-2 font-medium">No</th>
                       <th className="px-3 py-2 font-medium">Nama Barang</th>
                       <th className="px-3 py-2 font-medium">Tipe</th>
@@ -404,53 +499,57 @@ export default function RiwayatKwitansiPage() {
                   <tbody className="divide-y divide-hairline">
                     {(detailReceipt.supplier_receipt_items || []).map((item, idx) => (
                       <tr key={item.id}>
-                        <td className="px-3 py-2 text-xs text-muted-foreground">{idx + 1}</td>
+                        <td className="px-3 py-2 text-xs text-gray-400">{idx + 1}</td>
                         <td className="px-3 py-2">
-                          <p className="text-xs font-medium text-foreground">{item.item_name}</p>
-                          {item.specs && <p className="text-[10px] text-muted-foreground">{item.specs}</p>}
+                          <p className="text-xs font-medium text-gray-900">{item.item_name}</p>
+                          {item.specs && <p className="text-[10px] text-gray-400">{item.specs}</p>}
                         </td>
                         <td className="px-3 py-2">
                           <Badge variant={item.item_type === 'unit' ? 'default' : 'secondary'} className="text-[9px] px-1.5 py-0 capitalize">{item.item_type}</Badge>
                         </td>
                         <td className="px-3 py-2 text-center text-xs">{item.quantity}</td>
-                        <td className="px-3 py-2 text-right text-xs font-mono">{formatRupiah(item.buy_price)}</td>
-                        <td className="px-3 py-2 text-right text-xs font-mono font-semibold">{formatRupiah(item.subtotal)}</td>
+                        <td className="px-3 py-2 text-right text-xs font-mono text-gray-600">{formatRupiah(item.buy_price)}</td>
+                        <td className="px-3 py-2 text-right text-xs font-mono font-semibold text-gray-900">{formatRupiah(item.subtotal)}</td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot>
-                    <tr className="border-t border-border bg-secondary/30">
-                      <td colSpan={5} className="px-3 py-2 text-right text-xs font-bold text-foreground">Total</td>
-                      <td className="px-3 py-2 text-right text-sm font-mono font-bold text-badge-warning">{formatRupiah(detailReceipt.total)}</td>
-                    </tr>
-                  </tfoot>
                 </table>
               </div>
             </div>
 
+            {/* Total — Prominent */}
+            <div className="flex items-center justify-between rounded-2xl bg-[#04123F] px-4 py-3">
+              <span className="text-xs font-medium text-white/70">Total Pembelian</span>
+              <span className="font-mono text-lg font-bold text-[#FEC40B]">{formatRupiah(detailReceipt.total)}</span>
+            </div>
+
+            {/* Notes */}
             {detailReceipt.notes && (
-              <div className="border-t border-border pt-3">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Catatan</p>
-                <p className="font-medium text-foreground">{detailReceipt.notes}</p>
+              <div className="rounded-xl border border-hairline bg-amber-50/50 p-3">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-amber-700 mb-0.5">Catatan</p>
+                <p className="text-xs text-gray-700">{detailReceipt.notes}</p>
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-2 pt-2">
-              <Button onClick={() => handleDownloadPDF(detailReceipt)} disabled={pdfLoading === detailReceipt.id} variant="outline" className="flex-1 gap-2">
-                {pdfLoading === detailReceipt.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={14} />}
+            {/* Actions — Clean stacked on mobile */}
+            <div className="flex flex-col gap-2 pt-1">
+              <Button onClick={() => handleDownloadPDF(detailReceipt)} disabled={pdfLoading === detailReceipt.id} variant="outline" className="w-full gap-2 h-10">
+                {pdfLoading === detailReceipt.id ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground" /> : <Download size={16} />}
                 Download PDF
               </Button>
-              {detailReceipt.status === 'selesai' && (
-                <Button onClick={() => { setCancelConfirm(detailReceipt); setDetailReceipt(null) }} variant="destructive" className="flex-1 gap-2">
-                  <XCircle size={14} />
-                  Batalkan Kwitansi
+              <div className="flex gap-2">
+                {detailReceipt.status === 'selesai' && (
+                  <Button onClick={() => { setCancelConfirm(detailReceipt); setDetailReceipt(null) }} variant="outline" className="flex-1 gap-1.5 h-10 border-amber-200 text-amber-700 hover:bg-amber-50">
+                    <XCircle size={15} />
+                    Batalkan
+                  </Button>
+                )}
+                <Button onClick={() => { setDeleteConfirm(detailReceipt); setDetailReceipt(null) }} variant="outline" className="flex-1 gap-1.5 h-10 border-red-200 text-red-600 hover:bg-red-50">
+                  <Trash2 size={15} />
+                  Hapus
                 </Button>
-              )}
-              <Button onClick={() => { setDeleteConfirm(detailReceipt); setDetailReceipt(null) }} variant="destructive" className="flex-1 gap-2">
-                <Trash2 size={14} />
-                Hapus
-              </Button>
-              <Button onClick={() => setDetailReceipt(null)} variant="secondary" className="flex-1">Tutup</Button>
+              </div>
+              <Button onClick={() => setDetailReceipt(null)} variant="secondary" className="w-full h-10">Tutup</Button>
             </div>
           </div>
         </Modal>

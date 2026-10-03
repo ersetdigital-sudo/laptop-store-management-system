@@ -1,6 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+'use client'
+
+import { useState, useMemo } from 'react'
 import { Badge } from '@/components/ui/badge'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronLeft, ChevronRight, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 interface Transaction {
@@ -19,9 +21,19 @@ interface RecentTransactionsProps {
   isAdmin?: boolean
 }
 
-export default function RecentTransactions({ items, limit = 5, isAdmin = true }: RecentTransactionsProps) {
+const PAGE_SIZE = 5
+
+export default function RecentTransactions({ items, limit = 20, isAdmin = true }: RecentTransactionsProps) {
+  const [page, setPage] = useState(1)
+
   const displayItems = items.slice(0, limit)
-  
+  const totalPages = Math.max(1, Math.ceil(displayItems.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageItems = useMemo(
+    () => displayItems.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE),
+    [displayItems, currentPage]
+  )
+
   const formatRupiah = (value: number) => {
     return `Rp ${value.toLocaleString('id-ID')}`
   }
@@ -45,74 +57,125 @@ export default function RecentTransactions({ items, limit = 5, isAdmin = true }:
     return labels[type as keyof typeof labels] || type
   }
 
-  const getTypeBadge = (type: string) => {
-    const variants = {
-      servis: 'info' as const,
-      sale: 'success' as const,
-      purchase: 'secondary' as const
+  const getTypeStyle = (type: string) => {
+    const styles: Record<string, { bg: string; color: string }> = {
+      servis: { bg: '#EEF0F8', color: '#04123F' },
+      sale: { bg: '#ECFDF5', color: '#059669' },
+      purchase: { bg: '#F1F3F7', color: '#6B7280' },
     }
-    return variants[type as keyof typeof variants] || 'secondary' as const
+    return styles[type] || styles.purchase
   }
 
   return (
-    <Card className="shadow-card hover:shadow-card-hover">
-      <CardHeader className="flex-row items-center justify-between pb-3">
+    <div className="card-premium p-5 sm:p-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <CardTitle className="text-base font-bold" style={{ fontWeight: 700 }}>
+          <h3 className="text-base font-bold text-[#111827]" style={{ fontWeight: 700 }}>
             Transaksi Terbaru
-          </CardTitle>
-          <p className="text-xs text-ash mt-0.5">
-            {limit} transaksi terakhir di periode ini
+          </h3>
+          <p className="text-xs text-[#6B7280] mt-0.5">
+            {displayItems.length} transaksi di periode ini
           </p>
         </div>
-        <Link href="/laporan" className="text-xs text-ink hover:underline flex items-center gap-1 flex-shrink-0">
+        <Link
+          href="/laporan"
+          className="text-xs text-[#04123F] font-medium hover:underline flex items-center gap-1 flex-shrink-0"
+        >
           Lihat semua
           <ArrowRight size={12} />
         </Link>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {displayItems.length === 0 ? (
-          <div className="py-6 text-center">
-            <p className="text-xs text-stone">Belum ada transaksi</p>
+      </div>
+
+      {displayItems.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F1F3F7] mb-3">
+            <Clock size={22} className="text-[#9CA3AF]" />
           </div>
-        ) : (
+          <p className="text-sm font-semibold text-[#111827] mb-1">Belum ada transaksi</p>
+          <p className="text-xs text-[#6B7280]">Transaksi akan muncul di sini setelah ada penjualan atau servis.</p>
+        </div>
+      ) : (
+        <>
           <div className="space-y-2">
-            {displayItems.map((item) => (
-              <div 
-                key={item.id} 
-                className="flex items-center justify-between gap-3 p-2.5 rounded-lg border border-hairline hover:border-primary/20 hover:bg-secondary/30 transition-all"
-              >
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5 mb-0.5">
-                    <Badge variant={getTypeBadge(item.type)} className="text-[9px] px-1.5 py-0 h-4">
-                      {getTypeLabel(item.type)}
-                    </Badge>
-                    {item.status && (
-                      <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">
-                        {item.status}
+            {pageItems.map((item) => {
+              const typeStyle = getTypeStyle(item.type)
+              return (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F8F9FC] transition-all"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ background: typeStyle.bg, color: typeStyle.color }}
+                      >
+                        {getTypeLabel(item.type)}
+                      </span>
+                      {item.status && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                          {item.status}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-sm font-semibold text-[#111827] truncate leading-tight">{item.title}</p>
+                    <p className="text-xs text-[#9CA3AF] mt-0.5 leading-tight">{item.subtitle}</p>
+                    <p className="text-[11px] text-[#9CA3AF] mt-0.5">{formatDate(item.date)}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    {isAdmin ? (
+                      <p className="text-sm font-semibold text-[#111827] tabular-nums">
+                        {formatRupiah(item.amount)}
+                      </p>
+                    ) : (
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 h-4">
+                        {item.status || 'Selesai'}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-xs font-semibold text-ink truncate leading-tight">{item.title}</p>
-                  <p className="text-[10px] text-stone mt-0.5 leading-tight">{item.subtitle}</p>
-                  <p className="text-[9px] text-stone mt-0.5">{formatDate(item.date)}</p>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  {isAdmin ? (
-                    <p className="text-xs font-bold text-ink font-mono">
-                      {formatRupiah(item.amount)}
-                    </p>
-                  ) : (
-                    <Badge variant="outline" className="text-[9px] px-1.5 py-0 h-4">
-                      {item.status || 'Selesai'}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
-        )}
-      </CardContent>
-    </Card>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#F1F3F7]">
+              <p className="text-xs text-[#9CA3AF]">
+                Hal {currentPage} dari {totalPages}
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F8F9FC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className="flex h-8 w-8 items-center justify-center rounded-lg text-xs font-semibold transition-colors"
+                    style={p === currentPage
+                      ? { background: '#04123F', color: '#fff' }
+                      : { color: '#6B7280' }}
+                  >
+                    {p}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#E5E7EB] text-[#6B7280] hover:bg-[#F8F9FC] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   )
 }

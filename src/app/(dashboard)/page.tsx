@@ -6,7 +6,6 @@ import { useSearchParams } from 'next/navigation'
 import { fetchFinanceData } from '@/lib/finance'
 import { Wrench, TrendingUp, DollarSign } from 'lucide-react'
 
-import PageHeader from '@/components/dashboard/PageHeader'
 import MonthPicker from '@/components/dashboard/MonthPicker'
 import StatCard from '@/components/dashboard/StatCard'
 import RevenueChart from '@/components/dashboard/RevenueChart'
@@ -14,6 +13,7 @@ import CategoryChart from '@/components/dashboard/CategoryChart'
 import TopProducts from '@/components/dashboard/TopProducts'
 import TopCustomers from '@/components/dashboard/TopCustomers'
 import RecentTransactions from '@/components/dashboard/RecentTransactions'
+// PageHeader no longer used — inline header with new typography
 
 const MONTHS = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -34,10 +34,10 @@ export default function DashboardPage() {
   const params = useSearchParams()
   const month = params?.get('m') ?? 'all'
   const year = params?.get('y') ?? String(new Date().getFullYear())
-  
-  const [stats, setStats] = useState<DashboardStats>({ 
-    totalServis: 0, totalOmzet: 0, totalProfit: 0, 
-    totalBiaya: 0, unitTerjual: 0, sparepartDigunakan: 0 
+
+  const [stats, setStats] = useState<DashboardStats>({
+    totalServis: 0, totalOmzet: 0, totalProfit: 0,
+    totalBiaya: 0, unitTerjual: 0, sparepartDigunakan: 0
   })
   const [loading, setLoading] = useState(true)
   const [monthlyData, setMonthlyData] = useState<any[]>([])
@@ -46,18 +46,17 @@ export default function DashboardPage() {
   const [topProducts, setTopProducts] = useState<any[]>([])
   const [topCustomers, setTopCustomers] = useState<any[]>([])
   const [recentTransactions, setRecentTransactions] = useState<any[]>([])
+  const [todayStats, setTodayStats] = useState({ sales: 0, omzet: 0, servis: 0 })
 
   useEffect(() => { fetchAll() }, [month, year])
 
   async function fetchAll() {
     try {
       const yearNum = Number(year)
-      // MonthPicker mengirim index 0-based (0=Januari), helper finance.ts memakai bulan 1-based (1=Januari)
       const monthNum = month === 'all' ? null : Number(month) + 1
 
       const { summary, services, sales, parts } = await fetchFinanceData({ year: yearNum, month: monthNum })
 
-      // Jumlah sparepart yang dipakai pada servis selesai di periode ini
       const sparepartDigunakan = (parts || []).reduce((sum, p) => sum + (p.quantity || 0), 0)
 
       setStats({
@@ -69,7 +68,7 @@ export default function DashboardPage() {
         sparepartDigunakan,
       })
 
-      // Monthly chart data (12 bulan, dari satu sumber formula laba)
+      // Monthly chart data
       const monthly = summary.monthly.map((m) => ({
         name: MONTHS[m.month - 1].slice(0, 3),
         omzet: m.omzetServis + m.omzetPenjualan,
@@ -78,8 +77,7 @@ export default function DashboardPage() {
       }))
       setMonthlyData(monthly)
 
-      // Category breakdown (Servis vs Unit) — profit dari status selesai/completed saja
-      // Profit Servis = omzet servis - modal sparepart (HPP), Profit Unit = margin unit
+      // Category breakdown
       const servisProfit = summary.omzetServis - summary.modalSparepart
       const grossProfit = servisProfit + summary.marginUnit
       setCategoryData([
@@ -95,7 +93,7 @@ export default function DashboardPage() {
         },
       ])
 
-      // Komposisi Laba vs Biaya Operasional (dari data asli)
+      // Laba vs Biaya
       const labaBersih = Math.max(0, summary.labaBersih)
       const biayaTotal = summary.biayaOperasional || 0
       const totalLabaBiaya = labaBersih + biayaTotal
@@ -103,20 +101,20 @@ export default function DashboardPage() {
         { name: 'Laba Bersih', value: Math.round(labaBersih), pct: totalLabaBiaya > 0 ? Math.round((labaBersih / totalLabaBiaya) * 100) : 0 },
         { name: 'Biaya Operasional', value: Math.round(biayaTotal), pct: totalLabaBiaya > 0 ? Math.round((biayaTotal / totalLabaBiaya) * 100) : 0 },
       ])
-      
-      // Top products by quantity
+
+      // Top products
       const productMap: Record<string, { qty: number; revenue: number; category: string }> = {}
       sales.forEach(s => {
-        const prodName = s.product_id || 'Unknown'
+        const prodName = s.product_name || s.product_id || 'Unknown'
         if (!productMap[prodName]) productMap[prodName] = { qty: 0, revenue: 0, category: 'Unit' }
-        productMap[prodName].qty += 1
+        productMap[prodName].qty += s.quantity || 1
         productMap[prodName].revenue += s.sell_price || 0
       })
       const topProds = Object.entries(productMap)
         .map(([name, data]) => ({ name, ...data }))
         .sort((a, b) => b.qty - a.qty)
       setTopProducts(topProds)
-      
+
       // Top customers
       const customerMap: Record<string, { total: number; count: number }> = {}
       services.forEach(s => {
@@ -135,7 +133,7 @@ export default function DashboardPage() {
         .map(([name, data]) => ({ name, ...data }))
         .sort((a, b) => b.total - a.total)
       setTopCustomers(topCust)
-      
+
       // Recent transactions
       const recent = [
         ...services.map(s => ({
@@ -158,11 +156,21 @@ export default function DashboardPage() {
         }))
       ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
       setRecentTransactions(recent)
-      
-    } catch (e) { 
-      console.error(e) 
-    } finally { 
-      setLoading(false) 
+
+      // Today's summary (from fetched data)
+      const today = new Date().toISOString().slice(0, 10)
+      const todaySales = sales.filter(s => s.created_at?.slice(0, 10) === today)
+      const todayServices = services.filter(s => s.created_at?.slice(0, 10) === today)
+      setTodayStats({
+        sales: todaySales.length,
+        omzet: todaySales.reduce((sum, s) => sum + (s.sell_price || 0), 0),
+        servis: todayServices.length,
+      })
+
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -170,63 +178,71 @@ export default function DashboardPage() {
     return `Rp ${value.toLocaleString('id-ID')}`
   }
 
-  const periodLabel = month === 'all' 
-    ? `Kumulatif Tahun ${year}` 
+  const periodLabel = month === 'all'
+    ? `Kumulatif Tahun ${year}`
     : `${MONTHS[Number(month)]} ${year}`
 
-  return (
-    <div className="space-y-3">
-      <PageHeader
-        title="Dashboard POS"
-        subtitle={isAdmin ? `Ringkasan bisnis toko laptop — ${periodLabel}` : 'Ringkasan aktivitas hari ini'}
-      >
-        {isAdmin && <MonthPicker month={month} year={year} />}
-      </PageHeader>
+  const hasData = stats.totalOmzet > 0 || stats.totalServis > 0
 
-      {/* KPI Stats */}
-      <div className={`grid grid-cols-1 gap-2.5 ${isAdmin ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-[28px] font-bold text-[#04123F] leading-tight tracking-tight" style={{ fontWeight: 800 }}>
+            Dashboard POS
+          </h1>
+          <p className="mt-1 text-sm text-[#6B7280]">
+            {isAdmin ? `Pantau bisnis toko laptop Anda — ${periodLabel}` : 'Aktivitas Anda hari ini'}
+          </p>
+        </div>
+        {isAdmin && (
+          <div className="flex items-center gap-2">
+            <MonthPicker month={month} year={year} />
+          </div>
+        )}
+      </div>
+
+      {/* KPI Cards */}
+      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         <StatCard
           title="Total Servis"
           value={loading ? '...' : String(stats.totalServis)}
-          sub={`${stats.sparepartDigunakan} sparepart digunakan`}
+          sub={loading ? 'Memuat...' : `${stats.sparepartDigunakan} sparepart digunakan`}
           icon={Wrench}
-          color="primary"
         />
         {isAdmin && (
           <>
             <StatCard
               title="Total Omzet"
               value={loading ? '...' : formatRupiah(stats.totalOmzet)}
-              sub={`${stats.unitTerjual} unit terjual`}
+              sub={loading ? 'Memuat...' : `${stats.unitTerjual} unit terjual`}
               icon={DollarSign}
-              color="emerald"
             />
             <StatCard
               title="Total Profit"
               value={loading ? '...' : formatRupiah(stats.totalProfit)}
-              sub={stats.totalOmzet > 0 ? `${((stats.totalProfit / stats.totalOmzet) * 100).toFixed(1)}% margin` : 'Belum ada penjualan'}
+              sub={loading ? 'Memuat...' : stats.totalOmzet > 0 ? `${((stats.totalProfit / stats.totalOmzet) * 100).toFixed(1)}% margin` : 'Belum ada penjualan'}
               icon={TrendingUp}
-              color={stats.totalProfit >= 0 ? 'emerald' : 'danger'}
-              valueClass={stats.totalProfit >= 0 ? 'text-badge-success' : 'text-danger'}
+              highlight
             />
           </>
         )}
       </div>
 
-      {/* Monthly Chart - Admin only */}
+      {/* Main Chart */}
       {isAdmin && (
-        <div>
-          <RevenueChart
-            data={monthlyData}
-            title={`Tren Bulanan ${year}`}
-            subtitle="Omzet dan profit per bulan"
-          />
-        </div>
+        <RevenueChart
+          data={monthlyData}
+          title="Tren Bulanan"
+          subtitle="Omzet dan profit per bulan"
+          year={year}
+        />
       )}
 
-      {/* Category & Marketplace Charts - Admin only */}
+      {/* Analytics Section */}
       {isAdmin && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <CategoryChart
             data={categoryData}
             title="Profit per Kategori"
@@ -240,18 +256,16 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Top Products & Customers - Admin only */}
+      {/* Top Products & Customers */}
       {isAdmin && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <TopProducts items={topProducts} limit={5} />
           <TopCustomers items={topCustomers} limit={5} />
         </div>
       )}
 
       {/* Recent Transactions */}
-      <div>
-        <RecentTransactions items={recentTransactions} limit={8} isAdmin={isAdmin} />
-      </div>
+      <RecentTransactions items={recentTransactions} limit={20} isAdmin={isAdmin} />
     </div>
   )
 }

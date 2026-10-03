@@ -285,29 +285,43 @@ function OperasionalForm({ cost, month, year, userId, onClose, onSaved }: {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className={labelClass}>Nama Biaya *</label>
-          <Input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Sewa Tempat, Listrik" className="h-10 w-full" />
+        {/* Section: Informasi Biaya */}
+        <div className="space-y-3.5">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 rounded-full bg-[#04123F]" />
+            <p className="text-xs font-bold text-gray-900 uppercase tracking-wide">Informasi Biaya</p>
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[11px] font-medium text-gray-500">Nama Biaya *</label>
+            <Input type="text" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Sewa Tempat, Listrik" className="h-10 w-full" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[11px] font-medium text-gray-500">Jumlah (Rp) *</label>
+            <RupiahInput value={form.amount} onChange={v => setForm({ ...form, amount: v })} className="h-10 w-full font-mono" />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-[11px] font-medium text-gray-500">Tanggal Biaya *</label>
+            <input
+              type="date"
+              required
+              value={form.cost_date}
+              onChange={e => setForm({ ...form, cost_date: e.target.value })}
+              className="h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+            />
+          </div>
         </div>
-        <div>
-          <label className={labelClass}>Jumlah (Rp) *</label>
-          <RupiahInput value={form.amount} onChange={v => setForm({ ...form, amount: v })} className="h-10 w-full font-mono" />
+
+        {/* Section: Catatan */}
+        <div className="space-y-3.5 pt-2">
+          <div className="flex items-center gap-2">
+            <div className="h-4 w-1 rounded-full bg-[#FEC40B]" />
+            <p className="text-xs font-bold text-gray-900 uppercase tracking-wide">Catatan (Opsional)</p>
+          </div>
+          <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} placeholder="Tambahkan catatan untuk biaya ini..." className={textareaClass} />
         </div>
-        <div>
-          <label className={labelClass}>Tanggal Biaya *</label>
-          <input
-            type="date"
-            required
-            value={form.cost_date}
-            onChange={e => setForm({ ...form, cost_date: e.target.value })}
-            className="h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Catatan</label>
-          <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className={textareaClass} />
-        </div>
-        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row">
+
+        {/* Actions */}
+        <div className="flex flex-col-reverse gap-2 border-t border-hairline pt-4 sm:flex-row">
           <Button type="button" onClick={onClose} variant="secondary" className="h-11 w-full sm:flex-1">Batal</Button>
           <Button type="submit" disabled={loading} className="h-11 w-full sm:flex-1">{loading ? 'Menyimpan...' : 'Simpan'}</Button>
         </div>

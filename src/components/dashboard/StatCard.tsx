@@ -1,24 +1,15 @@
-import { Card, CardContent } from '@/components/ui/card'
-import { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { LucideIcon } from 'lucide-react'
 
 interface StatCardProps {
   title: string
   value: string
   sub?: string
   icon: LucideIcon
-  color?: 'primary' | 'emerald' | 'orange' | 'danger' | 'sky'
-  valueClass?: string
+  highlight?: boolean
+  color?: string
+  compact?: boolean
   className?: string
-}
-
-// Sub-caption color based on status
-const SUB_COLOR = {
-  emerald: 'text-badge-success',
-  primary: 'text-stone',
-  orange: 'text-badge-warning',
-  danger: 'text-danger',
-  sky: 'text-badge-info',
 }
 
 export default function StatCard({
@@ -26,39 +17,59 @@ export default function StatCard({
   value,
   sub,
   icon: Icon,
-  color = 'primary',
-  valueClass = '',
+  highlight = false,
+  compact = false,
   className = ''
 }: StatCardProps) {
-  return (
-    <Card className={cn('shadow-card hover:shadow-card-hover transition-shadow', className)}>
-      <CardContent className="p-3.5 flex items-center gap-2.5">
-        {/* Icon Box - ALWAYS BLACK with white icon */}
-        <div className="h-9 w-9 rounded-sm bg-primary text-on-primary grid place-items-center shrink-0">
-          <Icon className="h-4 w-4" strokeWidth={2} />
-        </div>
+  const accent = highlight ? '#059669' : undefined
 
-        {/* Content - Compact spacing */}
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-medium text-ash leading-none truncate uppercase tracking-wide">
+  if (compact) {
+    return (
+      <div className={cn('card-premium flex flex-col items-center text-center p-3 gap-2 lg:flex-row lg:items-center lg:text-left lg:p-4 lg:gap-4', className)}>
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#04123F] lg:h-11 lg:w-11 lg:rounded-xl">
+          <Icon className="h-4 w-4 text-white lg:h-5 lg:w-5" strokeWidth={2} />
+        </div>
+        <div className="min-w-0 w-full lg:w-auto">
+          <p className="text-[9px] font-semibold text-[#6B7280] uppercase tracking-wide leading-none truncate lg:text-[10px] lg:truncate-none">
             {title}
           </p>
-          <p className={cn(
-            'text-lg font-bold mt-0.5 leading-none break-words tabular-nums truncate',
-            valueClass || 'text-ink'
-          )} style={{ fontWeight: 700 }}>
+          <p
+            className="mt-1 text-sm font-bold leading-tight tabular-nums text-[#111827] break-words lg:text-xl"
+            style={accent ? { color: accent } : undefined}
+          >
             {value}
           </p>
           {sub && (
-            <p className={cn(
-              'text-[10px] font-medium mt-0.5 leading-none truncate',
-              SUB_COLOR[color] || SUB_COLOR.primary
-            )}>
+            <p className="mt-0.5 text-[10px] leading-tight truncate lg:text-[11px] lg:truncate-none lg:break-words" style={{ color: accent ?? '#9CA3AF' }}>
               {sub}
             </p>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className={cn('card-premium flex items-center gap-4 p-4', className)}>
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#04123F]">
+        <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wide leading-none">
+          {title}
+        </p>
+        <p
+          className="mt-1 text-base sm:text-xl font-bold leading-tight tabular-nums text-[#111827] break-words"
+          style={accent ? { color: accent } : undefined}
+        >
+          {value}
+        </p>
+        {sub && (
+          <p className="mt-0.5 text-[11px] leading-tight break-words" style={{ color: accent ?? '#9CA3AF' }}>
+            {sub}
+          </p>
+        )}
+      </div>
+    </div>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase, Customer } from '@/lib/supabase'
-import { Search, Eye, ArrowUpDown, Loader2, Trash2, MessageCircle } from 'lucide-react'
+import { Search, Eye, ArrowUpDown, Loader2, Trash2, MessageCircle, Users, ShoppingBag, Clock } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -202,7 +202,7 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Mobile Card View — ala list-search */}
+      {/* Mobile Card View — Premium */}
       {!loading && (
         <div className="block lg:hidden space-y-2.5">
           {filtered.length === 0 ? (
@@ -216,41 +216,46 @@ export default function CustomersPage() {
           ) : (
             filtered.map(c => (
               <Card key={c.id} className="shadow-card overflow-hidden">
-                <CardContent className="p-3.5">
-                  <div className="flex items-center gap-3">
-                    <div className={`grid h-12 w-12 shrink-0 place-items-center rounded-xl text-sm font-bold ${avatarTone(c.nama)}`}>
+                <CardContent className="p-0">
+                  {/* Header row with navy tint */}
+                  <div className="flex items-center gap-3 px-3.5 py-3 bg-[#04123F]/[0.03]">
+                    <div className={`grid h-11 w-11 shrink-0 place-items-center rounded-xl text-sm font-bold ${avatarTone(c.nama)}`}>
                       {initials(c.nama)}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-foreground">{c.nama}</p>
-                      <p className="mt-0.5 truncate text-[10px] text-muted-foreground">
-                        <span className="font-medium text-stone">No. WA</span> · {c.no_wa}
-                        {c.alamat ? ` · ${c.alamat}` : ''}
-                      </p>
-                      <p className="mt-0.5 text-[10px] font-medium text-muted-foreground">
-                        {c.total_transaksi} transaksi
-                        <span className="mx-1 text-stone">·</span>
-                        Terakhir {c.transaksi_terakhir ? formatDate(c.transaksi_terakhir) : '-'}
-                      </p>
+                      <p className="truncate text-sm font-semibold text-ink">{c.nama}</p>
+                      <p className="mt-0.5 truncate text-[10px] text-muted-foreground font-mono">{c.no_wa}</p>
                     </div>
                     <a
                       href={waLink(c.no_wa)}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={`WhatsApp ${c.nama}`}
-                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-badge-success/15 text-badge-success transition-colors hover:bg-badge-success/25"
+                      className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-emerald-50 text-emerald-600 transition-colors hover:bg-emerald-100"
                     >
                       <MessageCircle size={15} strokeWidth={2} />
                     </a>
                   </div>
-                  <div className="mt-3 flex gap-1.5">
+                  {/* Stats row */}
+                  <div className="grid grid-cols-2 gap-px bg-hairline">
+                    <div className="bg-surface px-3.5 py-2.5">
+                      <p className="text-[10px] text-stone uppercase tracking-wide">Transaksi</p>
+                      <p className="text-sm font-bold text-ink">{c.total_transaksi}</p>
+                    </div>
+                    <div className="bg-surface px-3.5 py-2.5">
+                      <p className="text-[10px] text-stone uppercase tracking-wide">Terakhir</p>
+                      <p className="text-sm font-semibold text-ink">{c.transaksi_terakhir ? formatDate(c.transaksi_terakhir) : '-'}</p>
+                    </div>
+                  </div>
+                  {/* Action row */}
+                  <div className="flex gap-1.5 px-3.5 py-2.5 border-t border-hairline">
                     <Button
                       variant="secondary"
                       size="sm"
                       onClick={() => setDetailId(c.id)}
                       className="h-8 flex-1 gap-1 text-[11px]"
                     >
-                      <Eye size={12} /> Detail
+                      <Eye size={12} /> Lihat Detail
                     </Button>
                     <Button
                       variant="ghost"
@@ -268,21 +273,21 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Desktop Table View */}
+      {/* Desktop Table View — Premium */}
       {!loading && (
         <div className="hidden lg:block">
-          <Card className="shadow-card">
+          <Card className="shadow-card overflow-hidden">
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Nama</th>
-                      <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">No. WA</th>
-                      <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Alamat</th>
-                      <th className="text-center p-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Transaksi</th>
-                      <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Terakhir</th>
-                      <th className="text-center p-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">Aksi</th>
+                    <tr className="border-b border-hairline bg-[#04123F]/[0.02]">
+                      <th className="text-left p-3.5 text-xs font-semibold text-stone uppercase tracking-wide">Customer</th>
+                      <th className="text-left p-3.5 text-xs font-semibold text-stone uppercase tracking-wide">No. WA</th>
+                      <th className="text-left p-3.5 text-xs font-semibold text-stone uppercase tracking-wide">Alamat</th>
+                      <th className="text-center p-3.5 text-xs font-semibold text-stone uppercase tracking-wide">Transaksi</th>
+                      <th className="text-left p-3.5 text-xs font-semibold text-stone uppercase tracking-wide">Terakhir</th>
+                      <th className="text-center p-3.5 text-xs font-semibold text-stone uppercase tracking-wide">Aksi</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -294,23 +299,30 @@ export default function CustomersPage() {
                       </tr>
                     ) : (
                       filtered.map(c => (
-                        <tr key={c.id} className="border-b border-border hover:bg-muted/50 transition-colors">
-                          <td className="p-3">
-                            <p className="text-sm font-semibold text-foreground">{c.nama}</p>
+                        <tr key={c.id} className="border-b border-hairline hover:bg-[#04123F]/[0.02] transition-colors">
+                          <td className="p-3.5">
+                            <div className="flex items-center gap-2.5">
+                              <div className={`grid h-9 w-9 shrink-0 place-items-center rounded-lg text-xs font-bold ${avatarTone(c.nama)}`}>
+                                {initials(c.nama)}
+                              </div>
+                              <p className="text-sm font-semibold text-ink">{c.nama}</p>
+                            </div>
                           </td>
-                          <td className="p-3">
-                            <p className="text-xs font-mono text-foreground">{c.no_wa}</p>
+                          <td className="p-3.5">
+                            <p className="text-xs font-mono text-ink">{c.no_wa}</p>
                           </td>
-                          <td className="p-3">
+                          <td className="p-3.5">
                             <p className="text-xs text-muted-foreground truncate max-w-[200px]">{c.alamat || '-'}</p>
                           </td>
-                          <td className="p-3 text-center">
-                            <p className="text-xs font-medium text-foreground">{c.total_transaksi}</p>
+                          <td className="p-3.5 text-center">
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#04123F]/[0.06] px-2.5 py-1 text-xs font-semibold text-[#04123F]">
+                              {c.total_transaksi}
+                            </span>
                           </td>
-                          <td className="p-3">
+                          <td className="p-3.5">
                             <p className="text-xs text-muted-foreground">{formatDate(c.transaksi_terakhir)}</p>
                           </td>
-                          <td className="p-3">
+                          <td className="p-3.5">
                             <div className="flex justify-center gap-1">
                               <Button variant="ghost" size="sm" onClick={() => setDetailId(c.id)} className="h-7 w-7 p-0">
                                 <Eye size={13} />

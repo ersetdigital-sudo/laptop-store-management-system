@@ -18,6 +18,7 @@ import { RupiahInput } from '@/components/ui/rupiah-input'
 import PageHeader from '@/components/dashboard/PageHeader'
 import { NotaServisPDF } from '@/components/pdf/nota-servis'
 import { sendWhatsAppPDF } from '@/components/pdf/utils'
+import { DeviceEntry, type DeviceEntryData } from '@/components/servis/device-entry'
 
 export default function ServisPage() {
   const { isAdmin } = useAuth()
@@ -732,34 +733,27 @@ export default function ServisPage() {
   )
 }
 
-interface SparepartItem {
-  product_id: string
-  name: string
-  quantity: number
-  price: number
-  buy_price: number
-  max_qty: number
-}
-
 function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillPhone }: { onClose: () => void; onSaved: () => void; prefillCustomerId?: string; prefillNama?: string; prefillPhone?: string }) {
   const { user } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [spareparts, setSpareparts] = useState<Product[]>([])
-  const [items, setItems] = useState<SparepartItem[]>([])
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(prefillCustomerId || null)
+  const [devices, setDevices] = useState<DeviceEntryData[]>([
+    { device_type: 'Laptop', device_brand: '', device_model: '', kelengkapan: '', complaint: '', service_fee: 0, items: [] },
+  ])
   const [form, setForm] = useState({
-    customer_name: prefillNama || '', customer_phone: prefillPhone || '', device_type: 'Laptop',
-    device_brand: '', device_model: '', complaint: '', kelengkapan: '',
-    service_fee: 0, dp_amount: 0, notes: '', garansi: 'Tanpa Garansi',
+    customer_name: prefillNama || '', customer_phone: prefillPhone || '',
+    dp_amount: 0, notes: '', garansi: 'Tanpa Garansi',
   })
 
-  // Hitung total biaya sparepart dari items
-  const parts_fee = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
-  // Total modal (HPP) sparepart — snapshot buy_price saat dipakai
-  const parts_modal = items.reduce((sum, item) => sum + (item.buy_price * item.quantity), 0)
-  const total = form.service_fee + parts_fee
-  const sisa = total - form.dp_amount
+  // Aggregate totals across all devices
+  const totalPartsFee = devices.reduce((sum, d) => sum + d.items.reduce((s, i) => s + i.price * i.quantity, 0), 0)
+  const totalPartsModal = devices.reduce((sum, d) => sum + d.items.reduce((s, i) => s + i.buy_price * i.quantity, 0), 0)
+  const totalServiceFee = devices.reduce((sum, d) => sum + d.service_fee, 0)
+  const grandTotal = totalServiceFee + totalPartsFee
+  const sisa = grandTotal - form.dp_amount
+  const totalSparepartCount = devices.reduce((sum, d) => sum + d.items.length, 0)
   const formatRupiah = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 
   // Hitung tanggal berakhir garansi dari input manual
@@ -798,36 +792,21 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
 
   useEffect(() => { fetchSpareparts() }, [fetchSpareparts])
 
-  // Tambah sparepart ke list
-  function addSparepart() {
-    setItems([...items, { product_id: '', name: '', quantity: 0, price: 0, buy_price: 0, max_qty: 0 }])
+  // Tambah perangkat baru
+  function addDevice() {
+    setDevices([...devices, { device_type: 'Laptop', device_brand: '', device_model: '', kelengkapan: '', complaint: '', service_fee: 0, items: [] }])
   }
 
-  // Update sparepart item
-  function updateItem(index: number, field: keyof SparepartItem, value: string | number) {
-    const updated = [...items]
-    if (field === 'product_id') {
-      const product = spareparts.find(p => p.id === value)
-      if (product) {
-        updated[index] = {
-          ...updated[index],
-          product_id: product.id,
-          name: product.name,
-          price: product.sell_price || product.buy_price,
-          buy_price: product.buy_price || 0,
-          max_qty: product.quantity,
-          quantity: 1,
-        }
-      }
-    } else {
-      updated[index] = { ...updated[index], [field]: value }
-    }
-    setItems(updated)
+  // Update data perangkat
+  function updateDevice(index: number, data: DeviceEntryData) {
+    const updated = [...devices]
+    updated[index] = data
+    setDevices(updated)
   }
 
-  // Hapus sparepart dari list
-  function removeItem(index: number) {
-    setItems(items.filter((_, i) => i !== index))
+  // Hapus perangkat
+  function removeDevice(index: number) {
+    setDevices(devices.filter((_, i) => i !== index))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -843,42 +822,55 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
         customerId = customer?.id || null
       }
 
-      // 1. Insert servis
-      const { data: service, error: serviceError } = await supabase.from('services').insert({
-        customer_id: customerId,
-        customer_name: form.customer_name, customer_phone: form.customer_phone,
-        device_type: form.device_type, device_brand: form.device_brand || null,
-        device_model: form.device_model || null, complaint: form.complaint || null,
-        kelengkapan: form.kelengkapan || null,
-        service_fee: form.service_fee, parts_fee: parts_fee,
-        total_fee: total, dp_amount: form.dp_amount,
-        garansi: form.garansi, warranty_end_date: hitungWarrantyEnd(),
-        notes: form.notes || null,
-        status: 'proses', created_by: user?.id,
-      }).select('id').single()
-      if (serviceError) throw serviceError
+      const warrantyEnd = hitungWarrantyEnd()
+      const createdServiceIds: string[] = []
 
-      // 2. Simpan sparepart secara ATOMIK via RPC (row lock + cek stok + snapshot modal)
-      //    - Kurangi stok (trigger stock_movements)
-      //    - Snapshot harga jual (price) & harga beli (buy_price) saat dipakai
-      const itemsPayload = items
-        .filter(i => i.product_id && i.quantity > 0)
-        .map(i => ({
-          product_id: i.product_id,
-          quantity: i.quantity,
-          price: i.price,
-          buy_price: i.buy_price,
-        }))
+      // Buat satu service record per perangkat
+      for (let i = 0; i < devices.length; i++) {
+        const d = devices[i]
+        const devicePartsFee = d.items.reduce((s, item) => s + item.price * item.quantity, 0)
+        const deviceTotal = d.service_fee + devicePartsFee
 
-      const { error: partsError } = await supabase.rpc('save_service_parts', {
-        p_service_id: service.id,
-        p_items: itemsPayload,
-        p_created_by: user?.id,
-      })
-      if (partsError) {
-        // Rollback: hapus servis yang baru dibuat agar tidak jadi data yatim
-        await supabase.from('services').delete().eq('id', service.id)
-        throw partsError
+        // DP hanya ditaruh di perangkat pertama
+        const deviceDp = i === 0 ? form.dp_amount : 0
+
+        const { data: service, error: serviceError } = await supabase.from('services').insert({
+          customer_id: customerId,
+          customer_name: form.customer_name, customer_phone: form.customer_phone,
+          device_type: d.device_type, device_brand: d.device_brand || null,
+          device_model: d.device_model || null, complaint: d.complaint || null,
+          kelengkapan: d.kelengkapan || null,
+          service_fee: d.service_fee, parts_fee: devicePartsFee,
+          total_fee: deviceTotal, dp_amount: deviceDp,
+          garansi: form.garansi, warranty_end_date: warrantyEnd,
+          notes: form.notes || null,
+          status: 'proses', created_by: user?.id,
+        }).select('id').single()
+        if (serviceError) throw serviceError
+        createdServiceIds.push(service.id)
+
+        // Simpan sparepart secara ATOMIK via RPC
+        const itemsPayload = d.items
+          .filter(item => item.product_id && item.quantity > 0)
+          .map(item => ({
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price: item.price,
+            buy_price: item.buy_price,
+          }))
+
+        if (itemsPayload.length > 0) {
+          const { error: partsError } = await supabase.rpc('save_service_parts', {
+            p_service_id: service.id,
+            p_items: itemsPayload,
+            p_created_by: user?.id,
+          })
+          if (partsError) {
+            // Rollback: hapus semua servis yang sudah dibuat
+            await Promise.all(createdServiceIds.map(id => supabase.from('services').delete().eq('id', id)))
+            throw partsError
+          }
+        }
       }
 
       onSaved(); onClose()
@@ -895,8 +887,12 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Customer Info */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Section: Data Customer */}
+        <div className="flex items-center gap-2.5">
+          <div className="h-6 w-1 rounded-full bg-[#04123F]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Data Customer</h3>
+        </div>
         <CustomerAutocomplete
           nama={form.customer_name}
           noWa={form.customer_phone}
@@ -908,117 +904,34 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
           }}
         />
 
-        {/* Device Info */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div>
-            <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-              Jenis Perangkat <span className="text-destructive">*</span>
-            </label>
-            <select value={form.device_type} onChange={e => setForm({ ...form, device_type: e.target.value })} className="h-10 w-full rounded-lg border border-input bg-surface px-3 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20">
-              <option>Laptop</option><option>PC</option><option>Printer</option><option>Lainnya</option>
-            </select>
-          </div>
-          <div>
-            <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Merk</label>
-            <Input type="text" value={form.device_brand} onChange={e => setForm({ ...form, device_brand: e.target.value })} className="h-10 w-full" placeholder="Contoh: Asus" />
-          </div>
-          <div>
-            <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Model/Tipe</label>
-            <Input type="text" value={form.device_model} onChange={e => setForm({ ...form, device_model: e.target.value })} className="h-10 w-full" placeholder="Contoh: ROG" />
-          </div>
+        {/* Section: Detail Perangkat */}
+        <div className="flex items-center gap-2.5 pt-1">
+          <div className="h-6 w-1 rounded-full bg-[#04123F]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Detail Perangkat</h3>
+        </div>
+        <div className="space-y-3">
+          {devices.map((device, i) => (
+            <DeviceEntry
+              key={i}
+              index={i}
+              data={device}
+              spareparts={spareparts}
+              formatRupiah={formatRupiah}
+              onChange={data => updateDevice(i, data)}
+              onRemove={() => removeDevice(i)}
+              canRemove={devices.length > 1}
+            />
+          ))}
+          <Button type="button" variant="secondary" onClick={addDevice} className="h-10 w-full gap-2 text-sm">
+            <Plus size={16} /> Tambah Perangkat
+          </Button>
         </div>
 
-        {/* Kelengkapan */}
-        <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Kelengkapan</label>
-          <Input type="text" value={form.kelengkapan} onChange={e => setForm({ ...form, kelengkapan: e.target.value })} className="h-10 w-full" placeholder="Contoh: Charger, Tas, Unit saja" />
+        {/* Section: Pembayaran & Garansi */}
+        <div className="flex items-center gap-2.5 pt-1">
+          <div className="h-6 w-1 rounded-full bg-[#04123F]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Pembayaran & Garansi</h3>
         </div>
-
-        {/* Complaint */}
-        <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Keluhan/Kerusakan</label>
-          <textarea value={form.complaint} onChange={e => setForm({ ...form, complaint: e.target.value })} rows={3} className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="Deskripsikan keluhan atau kerusakan perangkat..." />
-        </div>
-
-        {/* Sparepart yang Dipakai */}
-        <div className="rounded-lg border border-dashed border-border p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <h4 className="text-sm font-bold text-foreground">Sparepart yang Dipakai</h4>
-              <p className="text-[10px] text-muted-foreground">Pilih sparepart dari stok, stok otomatis berkurang saat servis disimpan</p>
-            </div>
-            <Button type="button" variant="secondary" size="sm" onClick={addSparepart} className="h-8 gap-1.5 text-xs">
-              <Plus size={14} /> Tambah
-            </Button>
-          </div>
-
-          {items.length === 0 && (
-            <p className="py-4 text-center text-xs text-muted-foreground">Belum ada sparepart ditambahkan</p>
-          )}
-
-          <div className="space-y-2">
-            {items.map((item, i) => (
-              <div key={i} className="rounded-lg border border-border bg-card p-3">
-                <div className="flex flex-col gap-2">
-                  {/* Baris 1: Select sparepart (full width) */}
-                  <div className="flex items-start gap-2">
-                    <select
-                      value={item.product_id}
-                      onChange={e => updateItem(i, 'product_id', e.target.value)}
-                      className="h-9 min-w-0 flex-1 rounded-md border border-input bg-surface px-2 text-xs"
-                    >
-                      <option value="">Pilih sparepart...</option>
-                      {spareparts.map(p => (
-                        <option key={p.id} value={p.id}>
-                          {p.name} (stok: {p.quantity}) — {formatRupiah(p.sell_price || p.buy_price)}
-                        </option>
-                      ))}
-                    </select>
-                    <button type="button" onClick={() => removeItem(i)} className="h-9 w-9 shrink-0 flex items-center justify-center rounded-md border border-destructive/30 text-destructive hover:bg-destructive/10">
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                  {/* Baris 2: Qty + Harga + Total */}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <div className="flex items-center gap-1.5">
-                      <label className="text-[10px] text-muted-foreground">Qty:</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={item.max_qty || 999}
-                        value={item.quantity || ''}
-                        onChange={e => updateItem(i, 'quantity', Number(e.target.value) || 0)}
-                        onBlur={e => { if (!e.target.value || Number(e.target.value) < 1) updateItem(i, 'quantity', 1) }}
-                        className="h-9 w-16 rounded-md border border-input bg-surface px-2 text-xs text-center"
-                      />
-                    </div>
-                    <div className="flex items-center gap-1.5 flex-1 min-w-[120px]">
-                      <label className="text-[10px] text-muted-foreground shrink-0">Harga:</label>
-                      <RupiahInput
-                        value={item.price}
-                        onChange={v => updateItem(i, 'price', v)}
-                        className="h-9 min-w-0 flex-1 text-xs"
-                      />
-                    </div>
-                    <div className="text-xs font-mono font-medium text-foreground shrink-0">
-                      = {formatRupiah(item.price * item.quantity)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Biaya Jasa */}
-        <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
-            Biaya Jasa (Rp)
-          </label>
-          <RupiahInput value={form.service_fee} onChange={v => setForm({ ...form, service_fee: v })} className="h-10 w-full font-mono" />
-        </div>
-
-        {/* DP (Uang Muka) */}
         <div>
           <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             DP / Uang Muka (Rp)
@@ -1043,24 +956,28 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
           )}
         </div>
 
-        {/* Ringkasan Biaya */}
-        <div className="rounded-lg border border-border bg-secondary/50 p-4">
+        {/* Section: Ringkasan Biaya */}
+        <div className="flex items-center gap-2.5 pt-1">
+          <div className="h-6 w-1 rounded-full bg-[#FEC40B]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Ringkasan Biaya</h3>
+        </div>
+        <div className="rounded-xl border border-[#04123F]/10 bg-[#04123F]/[0.03] p-4">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-muted-foreground">
-              <span>Biaya Sparepart ({items.length} item)</span>
-              <span className="font-mono">{formatRupiah(parts_fee)}</span>
+              <span>Biaya Sparepart ({totalSparepartCount} item · {devices.length} perangkat)</span>
+              <span className="font-mono">{formatRupiah(totalPartsFee)}</span>
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>Total Modal Sparepart (HPP)</span>
-              <span className="font-mono">{formatRupiah(parts_modal)}</span>
+              <span className="font-mono">{formatRupiah(totalPartsModal)}</span>
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>Biaya Jasa</span>
-              <span className="font-mono">{formatRupiah(form.service_fee)}</span>
+              <span className="font-mono">{formatRupiah(totalServiceFee)}</span>
             </div>
-            <div className="flex justify-between border-t border-border pt-2">
-              <span className="font-bold text-foreground">Total Biaya</span>
-              <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(total)}</span>
+            <div className="flex justify-between border-t border-[#04123F]/10 pt-2">
+              <span className="font-bold text-[#04123F]">Total Biaya</span>
+              <span className="font-mono text-lg font-bold text-[#04123F]">{formatRupiah(grandTotal)}</span>
             </div>
             {form.dp_amount > 0 && (
               <>
@@ -1068,9 +985,9 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
                   <span>DP / Uang Muka</span>
                   <span className="font-mono">- {formatRupiah(form.dp_amount)}</span>
                 </div>
-                <div className="flex justify-between border-t border-border pt-2">
-                  <span className="font-bold text-foreground">Sisa Pembayaran</span>
-                  <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(sisa)}</span>
+                <div className="flex justify-between border-t border-[#04123F]/10 pt-2">
+                  <span className="font-bold text-[#04123F]">Sisa Pembayaran</span>
+                  <span className="font-mono text-lg font-bold text-[#04123F]">{formatRupiah(sisa)}</span>
                 </div>
               </>
             )}
@@ -1078,7 +995,7 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row">
+        <div className="flex flex-col-reverse gap-2 border-t border-[#04123F]/10 pt-4 sm:flex-row">
           <Button type="button" onClick={onClose} variant="secondary" className="h-11 w-full sm:flex-1">Batal</Button>
           <Button type="submit" disabled={loading} className="h-11 w-full sm:flex-1">
             {loading ? (

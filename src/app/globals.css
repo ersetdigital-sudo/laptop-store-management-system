@@ -4,91 +4,98 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  /* Uber Design System Colors */
-  --color-primary: #000000;
-  --color-primary-deep: #1a1a1a;
-  --color-secondary: #efefef;
-  --color-background: #ffffff;
-  --color-surface: #ffffff;
-  --color-surface-card: #ffffff;
-  --color-surface-dark: #000000;
-  --color-ink: #000000;
-  --color-on-primary: #ffffff;
-  --color-on-dark: #fcfcfc;
-  --color-hairline: #efefef;
-  --color-hairline-strong: #000000;
-  --color-ash: #4b4b4b;
-  --color-stone: #afafaf;
-  --color-badge-success: #34d399;
-  --color-badge-warning: #f59e0b;
-  --color-badge-info: #3b82f6;
-  --color-danger: #dc2626;
-  
+  /* Premium POS Color System */
+  --color-primary: #04123F;
+  --color-primary-deep: #030E30;
+  --color-secondary: #F1F3F7;
+  --color-background: #F8F9FC;
+  --color-surface: #FFFFFF;
+  --color-surface-card: #FFFFFF;
+  --color-surface-dark: #04123F;
+  --color-ink: #111827;
+  --color-on-primary: #FFFFFF;
+  --color-on-dark: #FFFFFF;
+  --color-hairline: #E5E7EB;
+  --color-hairline-strong: #04123F;
+  --color-ash: #6B7280;
+  --color-stone: #9CA3AF;
+  --color-badge-success: #059669;
+  --color-badge-warning: #FEC40B;
+  --color-badge-info: #3B82F6;
+  --color-danger: #DC2626;
+  --color-honey: #FEC40B;
+  --color-navy: #04123F;
+  --color-soft-bg: #F8F9FC;
+  --color-light-gray: #F1F3F7;
+
   /* Mapped to shadcn/ui */
-  --color-foreground: #000000;
-  --color-card: #ffffff;
-  --color-card-foreground: #000000;
-  --color-popover: #ffffff;
-  --color-popover-foreground: #000000;
-  --color-primary-foreground: #ffffff;
-  --color-secondary-foreground: #000000;
-  --color-muted: #f0f0f0;
-  --color-muted-foreground: #4b4b4b;
-  --color-accent: #000000;
-  --color-accent-foreground: #ffffff;
-  --color-destructive: #dc2626;
-  --color-border: #efefef;
-  --color-input: #efefef;
-  --color-ring: rgba(0, 0, 0, 0.5);
+  --color-foreground: #111827;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #111827;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #111827;
+  --color-primary-foreground: #FFFFFF;
+  --color-secondary-foreground: #111827;
+  --color-muted: #F1F3F7;
+  --color-muted-foreground: #6B7280;
+  --color-accent: #FEC40B;
+  --color-accent-foreground: #04123F;
+  --color-destructive: #DC2626;
+  --color-border: #E5E7EB;
+  --color-input: #E5E7EB;
+  --color-ring: rgba(4, 18, 63, 0.4);
 
   /* Typography - Inter */
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', monospace;
 
-  /* Border Radius - Pills & Cards */
+  /* Border Radius */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --radius-xl: 16px;
-  --radius-2xl: 16px;
-  --radius: 8px;
+  --radius-xl: 20px;
+  --radius-2xl: 20px;
+  --radius: 12px;
 }
 
 :root {
   color-scheme: light;
-  
-  /* Uber Black/White System */
-  --background: #ffffff;
-  --foreground: #000000;
-  --card: #ffffff;
-  --card-foreground: #000000;
-  --popover: #ffffff;
-  --popover-foreground: #000000;
-  --primary: #000000;
-  --primary-foreground: #ffffff;
-  --secondary: #efefef;
-  --secondary-foreground: #000000;
-  --muted: #f0f0f0;
-  --muted-foreground: #4b4b4b;
-  --accent: #000000;
-  --accent-foreground: #ffffff;
-  --destructive: #dc2626;
-  --border: #efefef;
-  --input: #efefef;
-  --ring: rgba(0, 0, 0, 0.5);
-  --radius: 8px;
 
-  /* Sidebar - Black */
-  --sidebar: #000000;
-  --sidebar-foreground: #fcfcfc;
-  --sidebar-accent: rgba(255, 255, 255, 0.15);
-  --sidebar-border: #1a1a1a;
+  /* Premium POS Palette */
+  --background: #F8F9FC;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  --primary: #04123F;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F1F3F7;
+  --secondary-foreground: #111827;
+  --muted: #F1F3F7;
+  --muted-foreground: #6B7280;
+  --accent: #FEC40B;
+  --accent-foreground: #04123F;
+  --destructive: #DC2626;
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: rgba(4, 18, 63, 0.4);
+  --radius: 12px;
+
+  /* Sidebar - Deep Navy */
+  --sidebar: #04123F;
+  --sidebar-foreground: #FFFFFF;
+  --sidebar-accent: #FEC40B;
+  --sidebar-accent-foreground: #04123F;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
 
   /* Semantic */
-  --success: #34d399;
-  --success-bg: #d1fae5;
-  --warning: #f59e0b;
-  --warning-bg: #fef3c7;
+  --success: #059669;
+  --success-bg: #ECFDF5;
+  --warning: #FEC40B;
+  --warning-bg: #FEF9C3;
+  --honey: #FEC40B;
+  --navy: #04123F;
 }
 
 @layer base {
@@ -100,8 +107,7 @@
   }
   body {
     @apply text-foreground;
-    /* Off-white background untuk kontras dengan card putih */
-    background-color: #FAFAFA;
+    background-color: #F8F9FC;
     font-feature-settings: 'cv02', 'cv03', 'cv11', 'ss01';
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -110,27 +116,23 @@
 
 /* ── Mobile-first improvements ─────────────────────── */
 @media (max-width: 639px) {
-  /* Smaller padding on mobile */
   main {
     padding: 12px !important;
   }
-  
-  /* Full-width buttons in headers */
+
   .page-header-actions {
     width: 100%;
   }
   .page-header-actions > * {
     flex: 1;
   }
-  
-  /* Better touch targets */
+
   button, a, select, input {
     min-height: 44px;
   }
-  
-  /* Compact cards on mobile */
+
   .shadow-card {
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
   }
 }
 
@@ -141,22 +143,25 @@
   bottom: 0;
   left: 0;
   z-index: 60;
-  width: 75vw;
+  width: 78vw;
   max-width: 280px;
   transform: translateX(-100%);
   transition: transform 250ms cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
 }
 .sidebar-panel.open {
   transform: translateX(0);
 }
 @media (min-width: 1024px) {
   .sidebar-panel {
-    position: static;
+    position: sticky;
+    top: 0;
+    height: 100vh;
     transform: none;
-    width: 16rem;
+    width: 15.5rem;
     max-width: none;
     box-shadow: none;
+    flex-shrink: 0;
   }
 }
 
@@ -169,7 +174,7 @@
     position: fixed;
     inset: 0;
     z-index: 55;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(2px);
   }
@@ -190,50 +195,129 @@ table {
   font-variant-numeric: tabular-nums;
 }
 
-/* Tabular nums for number columns */
 .font-tabular {
   font-variant-numeric: tabular-nums;
 }
 
-/* Replace font-mono with tabular-nums for numbers */
 .font-mono {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif !important;
   font-variant-numeric: tabular-nums;
 }
 
-
-/* ── Uber Design Utilities ───────────────────────── */
+/* ── Premium POS Utilities ───────────────────────── */
 @layer utilities {
-  /* Shadows - More prominent for better card elevation */
   .shadow-card {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06), 0 4px 8px rgba(0, 0, 0, 0.04);
-  }
-  
-  .shadow-card-hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
-  }
-  
-  .shadow-elevated {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
-  
-  .shadow-float {
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16), 0 4px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
   }
 
-  /* Typography - Headlines bold, body medium/regular */
+  .shadow-card-hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-elevated {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .shadow-float {
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.10), 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
+  .shadow-premium {
+    box-shadow: 0 1px 3px rgba(4, 18, 63, 0.06), 0 1px 2px rgba(4, 18, 63, 0.04);
+  }
+
   .text-headline {
     font-weight: 700;
   }
-  
-  /* Pill buttons - already in button component */
+
   .pill {
     border-radius: 9999px;
   }
 
-  /* Card borders - smooth corners */
   .card-rounded {
-    border-radius: 8px;
+    border-radius: 16px;
+  }
+
+  /* Honey Gold accent */
+  .bg-honey { background-color: #FEC40B; }
+  .text-honey { color: #FEC40B; }
+  .border-honey { border-color: #FEC40B; }
+
+  /* Deep Navy */
+  .bg-navy { background-color: #04123F; }
+  .text-navy { color: #04123F; }
+  .border-navy { border-color: #04123F; }
+
+  /* Soft backgrounds */
+  .bg-soft { background-color: #F8F9FC; }
+  .bg-light-gray { background-color: #F1F3F7; }
+}
+
+/* ── Hide scrollbar but keep scrollable ───────────── */
+.sidebar-panel nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.sidebar-panel nav::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Mobile bottom navigation ─────────────────────── */
+.mobile-bottom-nav {
+  display: none;
+}
+@media (max-width: 1023px) {
+  .mobile-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    height: 64px;
+    background: #04123F;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 0 4px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+  }
+  .mobile-bottom-nav-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 10px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 150ms ease;
+    min-height: 44px;
+  }
+  .mobile-bottom-nav-item span {
+    line-height: 1;
+  }
+}
+
+/* ── Premium card ──────────────────────────────────── */
+.card-premium {
+  background: #FFFFFF;
+  border-radius: 16px;
+  border: 1px solid #E5E7EB;
+  box-shadow: 0 1px 3px rgba(4, 18, 63, 0.05), 0 1px 2px rgba(4, 18, 63, 0.03);
+  transition: box-shadow 200ms ease, transform 200ms ease, border-color 200ms ease;
+}
+.card-premium:hover {
+  box-shadow: 0 8px 24px rgba(4, 18, 63, 0.08), 0 2px 8px rgba(4, 18, 63, 0.04);
+  border-color: #D1D5DB;
+}
+
+/* ── Mobile card refinements ───────────────────────── */
+@media (max-width: 639px) {
+  .card-premium {
+    border-radius: 14px;
+    box-shadow: 0 1px 3px rgba(4, 18, 63, 0.04);
   }
 }
 
@@ -249,7 +333,7 @@ table {
   }
 }
 
-/* ── Section reveal animation (Laporan & lainnya) ─── */
+/* ── Section reveal animation ─── */
 @keyframes reveal-up {
   from {
     opacity: 0;
