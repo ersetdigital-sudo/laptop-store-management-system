@@ -4,9 +4,7 @@ import { useAuth } from '@/lib/auth-context'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { fetchFinanceData } from '@/lib/finance'
-import { supabase } from '@/lib/supabase'
-import { Wrench, TrendingUp, DollarSign, Banknote, Package, Contact, AlertTriangle } from 'lucide-react'
-import Link from 'next/link'
+import { Wrench, TrendingUp, DollarSign } from 'lucide-react'
 
 import MonthPicker from '@/components/dashboard/MonthPicker'
 import StatCard from '@/components/dashboard/StatCard'
@@ -49,7 +47,6 @@ export default function DashboardPage() {
   const [topCustomers, setTopCustomers] = useState<any[]>([])
   const [recentTransactions, setRecentTransactions] = useState<any[]>([])
   const [todayStats, setTodayStats] = useState({ sales: 0, omzet: 0, servis: 0 })
-  const [lowStockCount, setLowStockCount] = useState(0)
 
   useEffect(() => { fetchAll() }, [month, year])
 
@@ -170,16 +167,6 @@ export default function DashboardPage() {
         servis: todayServices.length,
       })
 
-      // Low stock count
-      try {
-        const { count } = await supabase
-          .from('products')
-          .select('id', { count: 'exact', head: true })
-          .filter('quantity', 'lte', 3)
-          .filter('status', 'eq', 'active')
-        setLowStockCount(count || 0)
-      } catch { setLowStockCount(0) }
-
     } catch (e) {
       console.error(e)
     } finally {
@@ -196,13 +183,6 @@ export default function DashboardPage() {
     : `${MONTHS[Number(month)]} ${year}`
 
   const hasData = stats.totalOmzet > 0 || stats.totalServis > 0
-
-  const quickActions = [
-    { href: '/unit-laptop/jual', label: 'Jual Barang', icon: Banknote, primary: true },
-    { href: '/servis', label: 'Tambah Servis', icon: Wrench, primary: false },
-    { href: '/stok/tambah', label: 'Tambah Stok', icon: Package, primary: false },
-    { href: '/customers', label: 'Tambah Customer', icon: Contact, primary: false },
-  ]
 
   return (
     <div className="space-y-6">
@@ -223,58 +203,28 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Quick Actions */}
-      {isAdmin && (
-        <div className="flex flex-wrap gap-2.5">
-          {quickActions.map((action) => (
-            <Link
-              key={action.href}
-              href={action.href}
-              className={`flex items-center gap-2 rounded-xl px-4 h-10 text-sm font-medium no-underline transition-all border ${
-                action.primary
-                  ? 'bg-[#FEC40B] text-[#04123F] border-transparent hover:bg-[#F5B800] shadow-sm'
-                  : 'bg-white text-[#111827] border-[#E5E7EB] hover:border-[#D1D5DB] hover:bg-[#F8F9FC]'
-              }`}
-            >
-              <action.icon size={16} strokeWidth={2} />
-              <span>{action.label}</span>
-            </Link>
-          ))}
-        </div>
-      )}
-
       {/* KPI Cards */}
-      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-2 lg:grid-cols-4' : 'sm:grid-cols-2'}`}>
+      <div className={`grid grid-cols-1 gap-4 ${isAdmin ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
         <StatCard
           title="Total Servis"
           value={loading ? '...' : String(stats.totalServis)}
-          sub={loading ? 'Memuat...' : stats.totalServis > 0 ? `${stats.sparepartDigunakan} sparepart` : 'Belum ada servis'}
+          sub={loading ? 'Memuat...' : `${stats.sparepartDigunakan} sparepart digunakan`}
           icon={Wrench}
-          color="navy"
-          dark={isAdmin}
         />
         {isAdmin && (
           <>
             <StatCard
               title="Total Omzet"
               value={loading ? '...' : formatRupiah(stats.totalOmzet)}
-              sub={loading ? 'Memuat...' : `${stats.unitTerjual} transaksi unit`}
+              sub={loading ? 'Memuat...' : `${stats.unitTerjual} unit terjual`}
               icon={DollarSign}
-              color="honey"
             />
             <StatCard
               title="Total Profit"
               value={loading ? '...' : formatRupiah(stats.totalProfit)}
               sub={loading ? 'Memuat...' : stats.totalOmzet > 0 ? `${((stats.totalProfit / stats.totalOmzet) * 100).toFixed(1)}% margin` : 'Belum ada penjualan'}
               icon={TrendingUp}
-              color="neutral"
-            />
-            <StatCard
-              title="Stok Menipis"
-              value={loading ? '...' : String(lowStockCount)}
-              sub={loading ? 'Memuat...' : lowStockCount > 0 ? 'perlu restock' : 'aman'}
-              icon={AlertTriangle}
-              color="neutral"
+              highlight
             />
           </>
         )}

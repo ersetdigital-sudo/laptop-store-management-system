@@ -6,15 +6,9 @@ interface StatCardProps {
   value: string
   sub?: string
   icon: LucideIcon
-  color?: 'navy' | 'honey' | 'neutral'
-  dark?: boolean
+  highlight?: boolean
+  color?: string
   className?: string
-}
-
-const ICON_STYLES: Record<string, { bg: string; color: string }> = {
-  navy: { bg: '#EEF0F8', color: '#04123F' },
-  honey: { bg: '#FEF9C3', color: '#B45309' },
-  neutral: { bg: '#F1F3F7', color: '#6B7280' },
 }
 
 export default function StatCard({
@@ -22,61 +16,30 @@ export default function StatCard({
   value,
   sub,
   icon: Icon,
-  color = 'navy',
-  dark = false,
+  highlight = false,
   className = ''
 }: StatCardProps) {
-  const iconStyle = ICON_STYLES[color]
-
-  if (dark) {
-    return (
-      <div className={cn('rounded-2xl p-5 flex flex-col justify-between min-h-[120px]', className)}
-        style={{ background: '#04123F' }}
-      >
-        <div className="flex items-start justify-between">
-          <p className="text-xs font-medium uppercase tracking-wide leading-none" style={{ color: 'rgba(255,255,255,0.6)' }}>
-            {title}
-          </p>
-          <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
-            <Icon className="h-5 w-5" strokeWidth={2} style={{ color: '#FEC40B' }} />
-          </div>
-        </div>
-        <div>
-          <p className="text-[28px] font-bold leading-none tabular-nums text-white" style={{ fontWeight: 700 }}>
-            {value}
-          </p>
-          {sub && (
-            <span className="inline-block mt-2 text-[11px] font-medium px-2.5 py-1 rounded-full"
-              style={{ background: 'rgba(254,196,11,0.15)', color: '#FEC40B' }}
-            >
-              {sub}
-            </span>
-          )}
-        </div>
-      </div>
-    )
-  }
+  const accent = highlight ? '#059669' : undefined
 
   return (
-    <div className={cn('card-premium p-5 flex flex-col justify-between min-h-[120px]', className)}>
-      <div className="flex items-start justify-between">
-        <p className="text-xs font-medium text-[#6B7280] uppercase tracking-wide leading-none">
+    <div className={cn('card-premium flex items-center gap-4 p-4', className)}>
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#04123F]">
+        <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+      </div>
+      <div className="min-w-0">
+        <p className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wide leading-none">
           {title}
         </p>
-        <div className="flex h-10 w-10 items-center justify-center rounded-full" style={{ background: iconStyle.bg }}>
-          <Icon className="h-5 w-5" strokeWidth={2} style={{ color: iconStyle.color }} />
-        </div>
-      </div>
-      <div>
-        <p className="text-[28px] font-bold leading-none tabular-nums text-[#111827]" style={{ fontWeight: 700 }}>
+        <p
+          className="mt-1 text-xl font-bold leading-tight tabular-nums text-[#111827] truncate"
+          style={accent ? { color: accent } : undefined}
+        >
           {value}
         </p>
         {sub && (
-          <span className="inline-block mt-2 text-[11px] font-medium px-2.5 py-1 rounded-full"
-            style={{ background: '#F1F3F7', color: '#6B7280' }}
-          >
+          <p className="mt-0.5 text-[11px] leading-tight truncate" style={{ color: accent ?? '#9CA3AF' }}>
             {sub}
-          </span>
+          </p>
         )}
       </div>
     </div>
