@@ -107,7 +107,9 @@ export default function CategoryChart({ data, title, subtitle }: CategoryChartPr
       ) : (
         <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#F1F3F7] mb-3">
-            <PieChart size={22} className="text-[#9CA3AF]" />
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className="text-[#9CA3AF]">
+              <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 2a8 8 0 0 1 8 8h-8z" fill="currentColor" />
+            </svg>
           </div>
           <p className="text-sm font-semibold text-[#111827] mb-1">Belum ada data</p>
           <p className="text-xs text-[#6B7280] max-w-[220px]">
