@@ -74,10 +74,15 @@ export function DeviceEntry({ index, data, spareparts, formatRupiah, onChange, o
   }
 
   return (
-    <div className="rounded-lg border border-border bg-secondary/20 p-4">
+    <div className="rounded-xl border border-[#04123F]/10 bg-[#04123F]/[0.02] p-4">
       {/* Header: device number + remove button */}
       <div className="mb-3 flex items-center justify-between">
-        <h4 className="text-sm font-bold text-foreground">Perangkat #{index + 1}</h4>
+        <div className="flex items-center gap-2">
+          <div className="grid h-7 w-7 place-items-center rounded-lg bg-[#04123F]/10">
+            <span className="text-xs font-bold text-[#04123F]">{index + 1}</span>
+          </div>
+          <h4 className="text-sm font-bold text-[#04123F]">Perangkat</h4>
+        </div>
         {canRemove && (
           <button
             type="button"
@@ -132,10 +137,10 @@ export function DeviceEntry({ index, data, spareparts, formatRupiah, onChange, o
       </div>
 
       {/* Sparepart yang Dipakai */}
-      <div className="mt-3 rounded-lg border border-dashed border-border p-3">
+      <div className="mt-3 rounded-lg border border-dashed border-[#04123F]/15 p-3">
         <div className="mb-2 flex items-center justify-between">
           <div>
-            <h5 className="text-xs font-bold text-foreground">Sparepart yang Dipakai</h5>
+            <h5 className="text-xs font-bold text-[#04123F]">Sparepart yang Dipakai</h5>
             <p className="text-[10px] text-muted-foreground">Stok otomatis berkurang saat servis disimpan</p>
           </div>
           <Button type="button" variant="secondary" size="sm" onClick={addSparepart} className="h-7 gap-1.5 text-[11px]">
@@ -208,12 +213,12 @@ export function DeviceEntry({ index, data, spareparts, formatRupiah, onChange, o
       </div>
 
       {/* Per-device summary */}
-      <div className="mt-2.5 flex items-center justify-between rounded-md bg-secondary/40 px-3 py-2 text-xs">
+      <div className="mt-2.5 flex items-center justify-between rounded-lg bg-[#04123F]/[0.04] px-3 py-2 text-xs">
         <span className="text-muted-foreground">
           Sparepart: <span className="font-mono">{formatRupiah(parts_fee)}</span>
           {parts_modal > 0 && <span className="ml-2 text-stone">Modal: {formatRupiah(parts_modal)}</span>}
         </span>
-        <span className="font-mono font-bold text-foreground">{formatRupiah(deviceTotal)}</span>
+        <span className="font-mono font-bold text-[#04123F]">{formatRupiah(deviceTotal)}</span>
       </div>
     </div>
   )

@@ -887,8 +887,12 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Customer Info */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Section: Data Customer */}
+        <div className="flex items-center gap-2.5">
+          <div className="h-6 w-1 rounded-full bg-[#04123F]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Data Customer</h3>
+        </div>
         <CustomerAutocomplete
           nama={form.customer_name}
           noWa={form.customer_phone}
@@ -900,7 +904,11 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
           }}
         />
 
-        {/* Daftar Perangkat */}
+        {/* Section: Detail Perangkat */}
+        <div className="flex items-center gap-2.5 pt-1">
+          <div className="h-6 w-1 rounded-full bg-[#04123F]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Detail Perangkat</h3>
+        </div>
         <div className="space-y-3">
           {devices.map((device, i) => (
             <DeviceEntry
@@ -919,7 +927,11 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
           </Button>
         </div>
 
-        {/* DP (Uang Muka) */}
+        {/* Section: Pembayaran & Garansi */}
+        <div className="flex items-center gap-2.5 pt-1">
+          <div className="h-6 w-1 rounded-full bg-[#04123F]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Pembayaran & Garansi</h3>
+        </div>
         <div>
           <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
             DP / Uang Muka (Rp)
@@ -944,8 +956,12 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
           )}
         </div>
 
-        {/* Ringkasan Biaya */}
-        <div className="rounded-lg border border-border bg-secondary/50 p-4">
+        {/* Section: Ringkasan Biaya */}
+        <div className="flex items-center gap-2.5 pt-1">
+          <div className="h-6 w-1 rounded-full bg-[#FEC40B]" />
+          <h3 className="text-sm font-bold text-[#04123F]">Ringkasan Biaya</h3>
+        </div>
+        <div className="rounded-xl border border-[#04123F]/10 bg-[#04123F]/[0.03] p-4">
           <div className="space-y-2 text-sm">
             <div className="flex justify-between text-muted-foreground">
               <span>Biaya Sparepart ({totalSparepartCount} item · {devices.length} perangkat)</span>
@@ -959,9 +975,9 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
               <span>Biaya Jasa</span>
               <span className="font-mono">{formatRupiah(totalServiceFee)}</span>
             </div>
-            <div className="flex justify-between border-t border-border pt-2">
-              <span className="font-bold text-foreground">Total Biaya</span>
-              <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(grandTotal)}</span>
+            <div className="flex justify-between border-t border-[#04123F]/10 pt-2">
+              <span className="font-bold text-[#04123F]">Total Biaya</span>
+              <span className="font-mono text-lg font-bold text-[#04123F]">{formatRupiah(grandTotal)}</span>
             </div>
             {form.dp_amount > 0 && (
               <>
@@ -969,9 +985,9 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
                   <span>DP / Uang Muka</span>
                   <span className="font-mono">- {formatRupiah(form.dp_amount)}</span>
                 </div>
-                <div className="flex justify-between border-t border-border pt-2">
-                  <span className="font-bold text-foreground">Sisa Pembayaran</span>
-                  <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(sisa)}</span>
+                <div className="flex justify-between border-t border-[#04123F]/10 pt-2">
+                  <span className="font-bold text-[#04123F]">Sisa Pembayaran</span>
+                  <span className="font-mono text-lg font-bold text-[#04123F]">{formatRupiah(sisa)}</span>
                 </div>
               </>
             )}
@@ -979,7 +995,7 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
         </div>
 
         {/* Actions */}
-        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row">
+        <div className="flex flex-col-reverse gap-2 border-t border-[#04123F]/10 pt-4 sm:flex-row">
           <Button type="button" onClick={onClose} variant="secondary" className="h-11 w-full sm:flex-1">Batal</Button>
           <Button type="submit" disabled={loading} className="h-11 w-full sm:flex-1">
             {loading ? (

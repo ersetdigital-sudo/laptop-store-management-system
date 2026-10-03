@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Dot } from 'recharts'
 
 interface RevenueChartProps {
@@ -17,23 +18,44 @@ interface RevenueChartProps {
 const NAVY = '#04123F'
 const HONEY = '#FEC40B'
 
+function safeNum(v: unknown): number {
+  if (v === null || v === undefined || typeof v === 'string' && (v === 'NaN' || v === '')) return 0
+  const n = Number(v)
+  return isNaN(n) ? 0 : n
+}
+
+function formatRupiah(value: number): string {
+  return `Rp ${safeNum(value).toLocaleString('id-ID')}`
+}
+
 function ChartTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null
+
+  const omzetEntry = payload.find((e: any) => e.dataKey === 'omzet')
+  const profitEntry = payload.find((e: any) => e.dataKey === 'profit')
+
   return (
-    <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.1)] p-3.5 min-w-[180px]">
-      <p className="text-xs font-bold text-[#111827] mb-2.5">{label} {label && '2026'}</p>
+    <div className="bg-white rounded-xl border border-[#E5E7EB] shadow-[0_8px_24px_rgba(0,0,0,0.08)] p-3 min-w-[170px]">
+      <p className="text-xs font-bold text-[#111827] mb-2">{label}</p>
       <div className="space-y-1.5">
-        {payload.map((entry: any, i: number) => (
-          <div key={i} className="flex items-center justify-between gap-3">
+        {omzetEntry && (
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full" style={{ background: entry.color }} />
-              <span className="text-xs text-[#6B7280]">{entry.name}</span>
+              <div className="h-2.5 w-2.5 rounded-full" style={{ background: NAVY }} />
+              <span className="text-xs text-[#6B7280]">Total Omzet</span>
             </div>
-            <span className="text-xs font-bold text-[#111827] tabular-nums">
-              Rp {Number(entry.value).toLocaleString('id-ID')}
-            </span>
+            <span className="text-xs font-bold text-[#111827] tabular-nums">{formatRupiah(omzetEntry.value)}</span>
           </div>
-        ))}
+        )}
+        {profitEntry && (
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full" style={{ background: HONEY }} />
+              <span className="text-xs text-[#6B7280]">Total Profit</span>
+            </div>
+            <span className="text-xs font-bold text-[#111827] tabular-nums">{formatRupiah(profitEntry.value)}</span>
+          </div>
+        )}
       </div>
     </div>
   )
@@ -49,89 +71,105 @@ function ActiveDot(props: any) {
       fill={fill}
       stroke="#fff"
       strokeWidth={2}
-      style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.15))' }}
     />
   )
 }
 
 export default function RevenueChart({ data, title, subtitle, year }: RevenueChartProps) {
-  const formatRupiah = (value: number) => {
-    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-    if (value >= 1000) return `${(value / 1000).toFixed(0)}K`
-    return value.toString()
+  const [chartHeight, setChartHeight] = useState(320)
+
+  useEffect(() => {
+    function updateHeight() {
+      setChartHeight(window.innerWidth >= 1024 ? 360 : 280)
+    }
+    updateHeight()
+    window.addEventListener('resize', updateHeight)
+    return () => window.removeEventListener('resize', updateHeight)
+  }, [])
+
+  const formatYAxis = (value: number) => {
+    if (value === 0) return '0'
+    const n = safeNum(value)
+    const abs = Math.abs(n)
+    if (abs >= 1000000) return `${n < 0 ? '-' : ''}${Math.round(abs / 1000000)}M`
+    if (abs >= 1000) return `${n < 0 ? '-' : ''}${Math.round(abs / 1000)}K`
+    return String(n)
   }
 
-  const hasData = data.some(d => d.omzet > 0 || d.profit > 0 || (d.biaya ?? 0) > 0)
-  const totalOmzet = data.reduce((sum, d) => sum + d.omzet, 0)
-  const totalProfit = data.reduce((sum, d) => sum + d.profit, 0)
-  const avgOmzet = totalOmzet / (data.length || 1)
+  const hasData = data.some(d => safeNum(d.omzet) > 0 || safeNum(d.profit) > 0 || safeNum(d.biaya) > 0)
+  const totalOmzet = data.reduce((sum, d) => sum + safeNum(d.omzet), 0)
+  const totalProfit = data.reduce((sum, d) => sum + safeNum(d.profit), 0)
 
   return (
     <div className="card-premium p-5 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-5 gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 gap-3">
         <div>
-          <h3 className="text-base font-bold text-[#111827]" style={{ fontWeight: 700 }}>
+          <h3 className="text-base font-bold text-[#111827]">
             {title}{year ? ` ${year}` : ''}
           </h3>
           {subtitle && (
             <p className="text-xs text-[#6B7280] mt-0.5">{subtitle}</p>
           )}
         </div>
-        {/* Summary stats */}
-        <div className="flex items-center gap-3">
-          <div className="rounded-xl bg-[#F8F9FC] px-3 py-2">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <div className="h-2.5 w-2.5 rounded-full" style={{ background: NAVY }} />
-              <span className="text-[11px] text-[#6B7280] font-medium">Total Omzet</span>
+        {/* Summary pills */}
+        <div className="flex items-center gap-2.5">
+          <div className="rounded-lg bg-[#F8F9FC] px-3 py-1.5">
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full" style={{ background: NAVY }} />
+              <span className="text-[10px] text-[#6B7280] font-medium">Total Omzet</span>
             </div>
-            <p className="text-sm font-bold text-[#111827] tabular-nums">Rp {totalOmzet.toLocaleString('id-ID')}</p>
+            <p className="text-xs font-bold text-[#111827] tabular-nums mt-0.5">{formatRupiah(totalOmzet)}</p>
           </div>
-          <div className="rounded-xl bg-[#FEFBF0] px-3 py-2">
-            <div className="flex items-center gap-1.5 mb-0.5">
-              <div className="h-2.5 w-2.5 rounded-full" style={{ background: HONEY }} />
-              <span className="text-[11px] text-[#6B7280] font-medium">Total Profit</span>
+          <div className="rounded-lg bg-[#FEFBF0] px-3 py-1.5">
+            <div className="flex items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full" style={{ background: HONEY }} />
+              <span className="text-[10px] text-[#6B7280] font-medium">Total Profit</span>
             </div>
-            <p className="text-sm font-bold text-[#111827] tabular-nums">Rp {totalProfit.toLocaleString('id-ID')}</p>
+            <p className="text-xs font-bold text-[#111827] tabular-nums mt-0.5">{formatRupiah(totalProfit)}</p>
           </div>
         </div>
       </div>
 
+      {/* Legend */}
+      <div className="flex items-center gap-4 mb-3">
+        <div className="flex items-center gap-1.5">
+          <div className="h-2.5 w-2.5 rounded-full" style={{ background: NAVY }} />
+          <span className="text-[11px] font-medium text-[#6B7280]">Total Omzet</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="h-2.5 w-2.5 rounded-full" style={{ background: HONEY }} />
+          <span className="text-[11px] font-medium text-[#6B7280]">Total Profit</span>
+        </div>
+      </div>
+
       {hasData ? (
-        <ResponsiveContainer width="100%" height={280}>
-          <ComposedChart data={data} margin={{ top: 10, right: 5, left: -16, bottom: 5 }}>
-            <defs>
-              <linearGradient id="grad-omzet" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={NAVY} stopOpacity={0.18} />
-                <stop offset="100%" stopColor={NAVY} stopOpacity={0.01} />
-              </linearGradient>
-              <linearGradient id="grad-profit" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor={HONEY} stopOpacity={0.28} />
-                <stop offset="100%" stopColor={HONEY} stopOpacity={0.02} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="4 4" stroke="#F1F3F7" vertical={false} />
+        <ResponsiveContainer width="100%" height={chartHeight}>
+          <ComposedChart data={data} margin={{ top: 10, right: 5, left: -20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#F1F3F7" vertical={false} />
             <XAxis
               dataKey="name"
-              tick={{ fill: '#9CA3AF', fontSize: 11, fontWeight: 500 }}
+              tick={{ fill: '#9CA3AF', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
               dy={8}
             />
             <YAxis
-              tickFormatter={formatRupiah}
+              tickFormatter={formatYAxis}
               tick={{ fill: '#9CA3AF', fontSize: 11 }}
               axisLine={false}
               tickLine={false}
+              width={45}
             />
             <Tooltip content={<ChartTooltip />} cursor={{ stroke: '#E5E7EB', strokeWidth: 1, strokeDasharray: '4 4' }} />
             <Area
               type="monotone"
               dataKey="omzet"
-              stroke={false}
-              fill="url(#grad-omzet)"
+              stroke="none"
+              fill={NAVY}
+              fillOpacity={0.06}
               name="Omzet"
-              activeDot={<ActiveDot fill={NAVY} />}
+              activeDot={false}
             />
             <Line
               type="monotone"
@@ -145,10 +183,11 @@ export default function RevenueChart({ data, title, subtitle, year }: RevenueCha
             <Area
               type="monotone"
               dataKey="profit"
-              stroke={false}
-              fill="url(#grad-profit)"
+              stroke="none"
+              fill={HONEY}
+              fillOpacity={0.08}
               name="Profit"
-              activeDot={<ActiveDot fill={HONEY} />}
+              activeDot={false}
             />
             <Line
               type="monotone"
