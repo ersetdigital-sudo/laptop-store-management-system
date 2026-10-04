@@ -832,6 +832,12 @@ function ServisEditForm({ service, initialParts, onClose, onSaved }: { service: 
           <textarea value={form.complaint} onChange={e => setForm({ ...form, complaint: e.target.value })} rows={3} className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="Deskripsikan keluhan atau kerusakan perangkat..." />
         </div>
 
+        {/* Keterangan atau Tindakan */}
+        <div>
+          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Keterangan atau Tindakan</label>
+          <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="Tulis keterangan atau tindakan yang dilakukan..." />
+        </div>
+
         {/* Sparepart yang Dipakai */}
         <div className="rounded-lg border border-dashed border-border p-4">
           <div className="mb-3 flex items-center justify-between">
@@ -923,12 +929,6 @@ function ServisEditForm({ service, initialParts, onClose, onSaved }: { service: 
             DP / Uang Muka (Rp)
           </label>
           <RupiahInput value={form.dp_amount} onChange={v => setForm({ ...form, dp_amount: v })} className="h-10 w-full font-mono" />
-        </div>
-
-        {/* Keterangan atau Tindakan */}
-        <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Keterangan atau Tindakan</label>
-          <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="Tulis keterangan atau tindakan yang dilakukan..." />
         </div>
 
         {/* Garansi */}
