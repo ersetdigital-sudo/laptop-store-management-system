@@ -40,18 +40,6 @@ const styles = StyleSheet.create({
   headerRightRow: { flexDirection: 'row', marginBottom: 1 },
   headerRightLabel: { fontSize: 6, color: '#666', width: 50 },
   headerRightValue: { fontSize: 6, fontWeight: 'bold', fontFamily: 'Helvetica-Bold', flex: 1 },
-  // Tipe Laptop
-  tipeRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 3,
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  tipeLabel: { fontSize: 7, fontWeight: 'bold', fontFamily: 'Helvetica-Bold', width: 60 },
-  tipeValue: { fontSize: 7, flex: 1 },
   // Table
   table: { marginBottom: 4, borderWidth: 1, borderColor: '#ddd' },
   tableHeader: {
@@ -75,9 +63,10 @@ const styles = StyleSheet.create({
     minHeight: 12,
   },
   colNo: { width: 16, fontSize: 6, textAlign: 'center' },
-  colService: { flex: 1, fontSize: 6 },
+  colTipe: { flex: 1.2, fontSize: 6, paddingHorizontal: 2 },
+  colKerusakan: { flex: 1.3, fontSize: 6, paddingHorizontal: 2 },
+  colKeteranganTable: { flex: 1.5, fontSize: 5.5, color: '#333', paddingHorizontal: 2 },
   colHarga: { width: 55, fontSize: 6, textAlign: 'right', fontFamily: 'Courier' },
-  colKeterangan: { width: 70, fontSize: 5.5, textAlign: 'center', color: '#333', paddingHorizontal: 2 },
   // Summary
   summaryContainer: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 4 },
   summaryBox: { width: 140 },
@@ -122,9 +111,26 @@ function formatDate(d: string | null): string {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+// Deskripsi satu perangkat: "Lenovo Thinkpad" (tanpa prefix "Laptop")
+// Jika device_type bukan Laptop (mis. Printer, PC), sertakan jenisnya: "Printer - Canon - L2900"
+function deviceLabel(s: Service): string {
+  if (s.device_type?.toLowerCase() === 'laptop') {
+    return [s.device_brand, s.device_model].filter(Boolean).join(' ')
+  }
+  return [s.device_type, s.device_brand, s.device_model].filter(Boolean).join(' - ')
+}
+
+export interface NotaServisPart {
+  name: string
+  quantity: number
+  price: number
+}
+
 interface NotaServisProps {
-  service: Service
-  parts?: { name: string; quantity: number; price: number }[]
+  // Perangkat-perangkat dalam satu nota (satu transaksi). Bila hanya 1, tetap jalan.
+  services: Service[]
+  // Sparepart per service id
+  partsByService?: Record<string, NotaServisPart[]>
   storeName?: string
   storeAddress?: string
   storePhone?: string
@@ -134,8 +140,8 @@ interface NotaServisProps {
 }
 
 export function NotaServisPDF({
-  service,
-  parts = [],
+  services,
+  partsByService = {},
   storeName = 'CENTRAL LAPTOP COMPUTER',
   storeAddress = '',
   storePhone = '0812-3456-7890',
@@ -143,54 +149,56 @@ export function NotaServisPDF({
   bankAccountNumber = '1234567890',
   bankAccountHolder = 'Toko',
 }: NotaServisProps) {
-  // Build table rows
-  const tableRows: { no: number; service: string; harga: number; keterangan: string }[] = []
+  const primary = services[0]
 
-  // Sparepart rows
-  parts.forEach((part) => {
+  // Bangun baris tabel: 1 baris per perangkat (tipe + kerusakan + keterangan + harga)
+  const tableRows: { no: number; tipe: string; kerusakan: string; keterangan: string; harga: number }[] = []
+
+  services.forEach((s) => {
+    const parts = partsByService[s.id] || []
+    const partsFee = parts.reduce((sum, p) => sum + p.price * p.quantity, 0)
     tableRows.push({
       no: tableRows.length + 1,
-      service: `${part.name} (Qty: ${part.quantity})`,
-      harga: part.price * part.quantity,
-      keterangan: '',
+      tipe: deviceLabel(s),
+      kerusakan: s.complaint || '',
+      keterangan: s.notes || '',
+      harga: s.service_fee + partsFee,
     })
   })
 
-  // Jasa Servis row
-  if (service.service_fee > 0) {
-    tableRows.push({
-      no: tableRows.length + 1,
-      service: 'Jasa Servis',
-      harga: service.service_fee,
-      keterangan: '',
-    })
-  }
-
-  // Fill keterangan di baris pertama saja
-  if (tableRows.length > 0 && service.notes) {
-    tableRows[0].keterangan = service.notes
-  }
-
-  // Pad to minimum 5 rows
+  // Pad ke minimum 5 baris
   while (tableRows.length < 5) {
     tableRows.push({
       no: tableRows.length + 1,
-      service: '',
-      harga: 0,
+      tipe: '',
+      kerusakan: '',
       keterangan: '',
+      harga: 0,
     })
   }
 
-  // Device type string
-  const tipePerangkat = [service.device_type, service.device_brand, service.device_model]
-    .filter(Boolean)
-    .join(' - ')
+  // Total agregat seluruh perangkat
+  const grandTotal = services.reduce((sum, s) => sum + (s.total_fee || 0), 0)
+  const totalDp = services.reduce((sum, s) => sum + (s.dp_amount || 0), 0)
 
-  // Garansi info
-  const garansiText = service.garansi && service.garansi.toLowerCase() !== 'tanpa garansi'
-    ? service.garansi
+  // Garansi (ambil dari perangkat pertama)
+  const garansiText = primary?.garansi && primary.garansi.toLowerCase() !== 'tanpa garansi'
+    ? primary.garansi
     : ''
-  const garansiEndDate = service.warranty_end_date ? formatDate(service.warranty_end_date) : ''
+  const garansiEndDate = primary?.warranty_end_date ? formatDate(primary.warranty_end_date) : ''
+
+  // Kelengkapan: gabung dari semua perangkat (unik)
+  const kelengkapanList = [...new Set(services.map((s) => s.kelengkapan).filter(Boolean))]
+
+  if (!primary) {
+    return (
+      <Document>
+        <Page size="A5" style={styles.page}>
+          <Text>Nota tidak tersedia</Text>
+        </Page>
+      </Document>
+    )
+  }
 
   return (
     <Document>
@@ -206,39 +214,35 @@ export function NotaServisPDF({
           <View style={styles.headerRight}>
             <View style={styles.headerRightRow}>
               <Text style={styles.headerRightLabel}>Tgl Masuk</Text>
-              <Text style={styles.headerRightValue}>: {formatDate(service.date_in)}</Text>
+              <Text style={styles.headerRightValue}>: {formatDate(primary.date_in)}</Text>
             </View>
             <View style={styles.headerRightRow}>
               <Text style={styles.headerRightLabel}>Nama</Text>
-              <Text style={styles.headerRightValue}>: {service.customer_name}</Text>
+              <Text style={styles.headerRightValue}>: {primary.customer_name}</Text>
             </View>
             <View style={styles.headerRightRow}>
               <Text style={styles.headerRightLabel}>No. WA</Text>
-              <Text style={styles.headerRightValue}>: {service.customer_phone}</Text>
+              <Text style={styles.headerRightValue}>: {primary.customer_phone}</Text>
             </View>
           </View>
-        </View>
-
-        {/* TIPE LAPTOP */}
-        <View style={styles.tipeRow}>
-          <Text style={styles.tipeLabel}>Tipe Laptop :</Text>
-          <Text style={styles.tipeValue}>{tipePerangkat || '-'}</Text>
         </View>
 
         {/* TABEL UTAMA */}
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={{ ...styles.tableHeaderText, width: 16, textAlign: 'center' }}>No</Text>
-            <Text style={{ ...styles.tableHeaderText, flex: 1 }}>Service / Kerusakan / Upgrade</Text>
-            <Text style={{ ...styles.tableHeaderText, width: 60, textAlign: 'center' }}>Keterangan</Text>
+            <Text style={{ ...styles.tableHeaderText, flex: 1.2 }}>Tipe Perangkat</Text>
+            <Text style={{ ...styles.tableHeaderText, flex: 1.3 }}>Kerusakan</Text>
+            <Text style={{ ...styles.tableHeaderText, flex: 1.5 }}>Keterangan / Tindakan</Text>
             <Text style={{ ...styles.tableHeaderText, width: 55, textAlign: 'right' }}>Harga</Text>
           </View>
 
           {tableRows.map((row, i) => (
             <View key={i} style={styles.tableRow}>
               <Text style={styles.colNo}>{row.no}</Text>
-              <Text style={styles.colService}>{row.service}</Text>
-              <Text style={{ ...styles.colKeterangan, textAlign: 'center' }}>{row.keterangan}</Text>
+              <Text style={styles.colTipe}>{row.tipe}</Text>
+              <Text style={styles.colKerusakan}>{row.kerusakan}</Text>
+              <Text style={styles.colKeteranganTable}>{row.keterangan}</Text>
               <Text style={styles.colHarga}>{row.harga > 0 ? formatRupiah(row.harga) : ''}</Text>
             </View>
           ))}
@@ -249,15 +253,15 @@ export function NotaServisPDF({
           <View style={styles.summaryBox}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Total</Text>
-              <Text style={styles.summaryValue}>{formatRupiah(service.total_fee)}</Text>
+              <Text style={styles.summaryValue}>{formatRupiah(grandTotal)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>DP</Text>
-              <Text style={styles.summaryValue}>{formatRupiah(service.dp_amount)}</Text>
+              <Text style={styles.summaryValue}>{formatRupiah(totalDp)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Sisa</Text>
-              <Text style={styles.summaryValue}>{formatRupiah(service.total_fee - service.dp_amount)}</Text>
+              <Text style={styles.summaryValue}>{formatRupiah(grandTotal - totalDp)}</Text>
             </View>
           </View>
         </View>
@@ -265,7 +269,7 @@ export function NotaServisPDF({
         {/* KELENGKAPAN */}
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Kelengkapan :</Text>
-          <Text style={styles.infoValue}>{service.kelengkapan || '-'}</Text>
+          <Text style={styles.infoValue}>{kelengkapanList.length > 0 ? kelengkapanList.join(', ') : '-'}</Text>
         </View>
 
         {/* GARANSI */}

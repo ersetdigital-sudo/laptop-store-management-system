@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { NotaUnitPDF } from '@/components/pdf/nota-unit'
 import { NotaServisPDF } from '@/components/pdf/nota-servis'
 import { downloadPDF } from '@/components/pdf/utils'
+import { fetchServiceGroup } from '@/lib/servis-group'
 import Link from 'next/link'
 
 type TabType = 'service' | 'penjualan'
@@ -160,22 +161,8 @@ export function CustomerDetailSheet({ open, customerId, onClose }: CustomerDetai
   const handleDownloadServicePDF = async (service: Service) => {
     setPdfLoading(service.id)
     try {
-      const { data: parts } = await supabase
-        .from('service_parts')
-        .select('quantity, price, products(name)')
-        .eq('service_id', service.id)
-
-      const partsList = parts?.map(p => {
-        const partRow = p.products as unknown as { name?: string } | { name?: string }[] | null
-        const partName = Array.isArray(partRow) ? partRow[0]?.name : partRow?.name
-        return {
-          name: partName || 'Part',
-          quantity: p.quantity,
-          price: p.price,
-        }
-      }) || []
-
-      const doc = NotaServisPDF({ service, parts: partsList, ...storeInfo })
+      const { services, partsByService } = await fetchServiceGroup(service)
+      const doc = NotaServisPDF({ services, partsByService, ...storeInfo })
       await downloadPDF(doc, `Nota-${service.nota_number}.pdf`)
     } catch (e) {
       console.error('Gagal generate PDF:', e)

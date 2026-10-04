@@ -21,6 +21,7 @@ export interface DeviceEntryData {
   device_model: string
   kelengkapan: string
   complaint: string
+  notes: string
   service_fee: number
   items: SparepartItem[]
 }
@@ -133,6 +134,18 @@ export function DeviceEntry({ index, data, spareparts, formatRupiah, onChange, o
           rows={2}
           className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
           placeholder="Deskripsikan keluhan atau kerusakan perangkat..."
+        />
+      </div>
+
+      {/* Keterangan / Tindakan per perangkat */}
+      <div className="mt-3">
+        <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Keterangan / Tindakan</label>
+        <textarea
+          value={data.notes}
+          onChange={e => updateField('notes', e.target.value)}
+          rows={2}
+          className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20"
+          placeholder="Tindakan / keterangan untuk perangkat ini..."
         />
       </div>
 
