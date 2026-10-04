@@ -31,6 +31,8 @@ export default function ServisDetailPage() {
   const [bankInfo, setBankInfo] = useState({ bankName: '', bankAccountNumber: '', bankAccountHolder: '' })
   const [showEditForm, setShowEditForm] = useState(false)
   const [showAddDevice, setShowAddDevice] = useState(false)
+  const [groupServices, setGroupServices] = useState<Service[]>([])
+  const [groupParts, setGroupParts] = useState<Record<string, { product_id: string; name: string; quantity: number; price: number; buy_price: number }[]>>({})
 
   useEffect(() => {
     if (params.id) fetchService(params.id as string)
@@ -60,15 +62,50 @@ export default function ServisDetailPage() {
       const { data, error } = await supabase.from('services').select('*, service_parts(*, products(name))').eq('id', id).single()
       if (error) throw error
       setService(data)
-      // Extract parts
+
+      // Extract parts for primary service
       const serviceParts = (data as any).service_parts || []
-      setParts(serviceParts.map((p: any) => ({
+      const primaryParts = serviceParts.map((p: any) => ({
         product_id: p.product_id,
         name: p.products?.name || 'Sparepart',
         quantity: p.quantity,
         price: p.price,
         buy_price: p.buy_price || 0,
-      })))
+      }))
+      setParts(primaryParts)
+
+      // Fallback: set group to just this service
+      setGroupServices([data])
+      setGroupParts({ [data.id]: primaryParts })
+
+      // Fetch all services in the group (same customer + created within 5 min)
+      const windowMs = 5 * 60 * 1000
+      const created = new Date(data.created_at).getTime()
+      const from = new Date(created - windowMs).toISOString()
+      const to = new Date(created + windowMs).toISOString()
+
+      const { data: groupData } = await supabase
+        .from('services')
+        .select('*, service_parts(*, products(name))')
+        .eq('customer_phone', data.customer_phone)
+        .gte('created_at', from)
+        .lte('created_at', to)
+        .order('created_at', { ascending: true })
+
+      if (groupData && groupData.length > 0) {
+        setGroupServices(groupData as Service[])
+        const partsMap: Record<string, { product_id: string; name: string; quantity: number; price: number; buy_price: number }[]> = {}
+        groupData.forEach((s: any) => {
+          partsMap[s.id] = (s.service_parts || []).map((p: any) => ({
+            product_id: p.product_id,
+            name: p.products?.name || 'Sparepart',
+            quantity: p.quantity,
+            price: p.price,
+            buy_price: p.buy_price || 0,
+          }))
+        })
+        setGroupParts(partsMap)
+      }
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
@@ -76,8 +113,10 @@ export default function ServisDetailPage() {
     if (!service) return
     setUpdating(true)
     try {
-      const { error } = await supabase.from('services').update({ status: 'selesai', date_out: new Date().toISOString() }).eq('id', service.id)
-      if (error) throw error
+      for (const s of groupServices) {
+        const { error } = await supabase.from('services').update({ status: 'selesai', date_out: new Date().toISOString() }).eq('id', s.id)
+        if (error) throw error
+      }
       fetchService(service.id)
     } catch (e) { console.error(e) } finally { setUpdating(false) }
   }
@@ -221,6 +260,12 @@ export default function ServisDetailPage() {
 
   const formatRupiah = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
 
+  // Combined totals across all devices in the group
+  const totalServiceFee = groupServices.reduce((s, d) => s + d.service_fee, 0)
+  const totalPartsFee = groupServices.reduce((s, d) => s + d.parts_fee, 0)
+  const grandTotal = groupServices.reduce((s, d) => s + d.total_fee, 0)
+  const totalDp = groupServices.reduce((s, d) => s + (d.dp_amount || 0), 0)
+
   if (loading) return <div className="flex items-center justify-center p-12"><div className="spinner" /></div>
 
   if (!service) {
@@ -282,7 +327,10 @@ export default function ServisDetailPage() {
             </div>
 
             <p className="text-center text-xs font-medium text-white/70">
-              {service.device_type}{service.device_brand ? ` · ${service.device_brand}` : ''}{service.device_model ? ` ${service.device_model}` : ''}
+              {groupServices.length > 1
+                ? `${groupServices.length} perangkat`
+                : `${service.device_type}${service.device_brand ? ` · ${service.device_brand}` : ''}${service.device_model ? ` ${service.device_model}` : ''}`
+              }
             </p>
             <h1 className="mt-1 text-center text-lg font-bold tracking-tight text-white">
               {service.nota_number}
@@ -338,75 +386,88 @@ export default function ServisDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Perangkat — tampilkan semua perangkat dalam grup */}
           <Card className="shadow-card">
             <CardContent className="p-4 sm:p-5">
-              <h3 className="mb-3 text-sm font-bold text-foreground">Informasi Perangkat</h3>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Jenis</p>
-                  <p className="text-sm font-semibold text-foreground">{service.device_type}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Merk</p>
-                  <p className="text-sm font-semibold text-foreground">{service.device_brand || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Model</p>
-                  <p className="text-sm font-semibold text-foreground">{service.device_model || '-'}</p>
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Kelengkapan</p>
-                  <p className="text-sm font-semibold text-foreground">{service.kelengkapan || '-'}</p>
-                </div>
-                <div className="sm:col-span-2">
-                  <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Keluhan</p>
-                  <p className="text-sm font-semibold text-foreground">{service.complaint || '-'}</p>
-                </div>
+              <h3 className="mb-3 text-sm font-bold text-foreground">
+                Informasi Perangkat{groupServices.length > 1 ? ` (${groupServices.length})` : ''}
+              </h3>
+              <div className="space-y-4">
+                {groupServices.map((dev, idx) => {
+                  const devParts = groupParts[dev.id] || []
+                  const devPartsModal = devParts.reduce((s, p) => s + p.buy_price * p.quantity, 0)
+                  return (
+                    <div key={dev.id} className={idx > 0 ? 'border-t border-hairline pt-4' : ''}>
+                      {groupServices.length > 1 && (
+                        <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                          Perangkat {idx + 1}
+                        </p>
+                      )}
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Jenis</p>
+                          <p className="text-sm font-semibold text-foreground">{dev.device_type}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Merk</p>
+                          <p className="text-sm font-semibold text-foreground">{dev.device_brand || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Model</p>
+                          <p className="text-sm font-semibold text-foreground">{dev.device_model || '-'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Kelengkapan</p>
+                          <p className="text-sm font-semibold text-foreground">{dev.kelengkapan || '-'}</p>
+                        </div>
+                        <div className="sm:col-span-2">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Keluhan/Kerusakan</p>
+                          <p className="text-sm font-semibold text-foreground">{dev.complaint || '-'}</p>
+                        </div>
+                        {dev.notes && (
+                          <div className="sm:col-span-2">
+                            <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Keterangan/Tindakan</p>
+                            <p className="text-sm text-muted-foreground">{dev.notes}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {devParts.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Sparepart</p>
+                          {devParts.map((part, pidx) => (
+                            <div key={pidx} className="flex items-center justify-between text-sm p-2 rounded-lg bg-secondary/50">
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-foreground truncate">{part.name}</p>
+                                <p className="text-[11px] text-muted-foreground">Qty: {part.quantity} x {formatRupiah(part.price)}</p>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <p className="font-mono font-semibold text-foreground">{formatRupiah(part.price * part.quantity)}</p>
+                                {part.buy_price > 0 && (
+                                  <p className="text-[10px] text-stone font-mono">modal: {formatRupiah(part.buy_price * part.quantity)}</p>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                          {devPartsModal > 0 && (
+                            <div className="flex justify-between border-t border-border pt-2.5">
+                              <span className="text-xs text-muted-foreground">Total Modal (HPP)</span>
+                              <span className="text-xs font-mono font-semibold text-muted-foreground">{formatRupiah(devPartsModal)}</span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      <div className="mt-3 flex items-center justify-between rounded-lg bg-secondary/30 px-3 py-2">
+                        <span className="text-xs text-muted-foreground">Biaya Jasa: <span className="font-mono font-medium text-foreground">{formatRupiah(dev.service_fee)}</span></span>
+                        <span className="text-xs font-bold text-foreground font-mono">{formatRupiah(dev.total_fee)}</span>
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             </CardContent>
           </Card>
-
-          {service.notes && (
-            <Card className="shadow-card">
-              <CardContent className="p-4 sm:p-5">
-                <h3 className="mb-2 text-sm font-bold text-foreground">Keterangan atau Tindakan</h3>
-                <p className="text-sm text-muted-foreground">{service.notes}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Sparepart yang Dipakai */}
-          {parts.length > 0 && (
-            <Card className="shadow-card">
-              <CardContent className="p-4 sm:p-5">
-                <h3 className="mb-3 text-sm font-bold text-foreground">Sparepart yang Dipakai</h3>
-                <div className="space-y-2">
-                  {parts.map((part, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm p-2 rounded-lg bg-secondary/50">
-                      <div className="min-w-0 flex-1">
-                        <p className="font-medium text-foreground truncate">{part.name}</p>
-                        <p className="text-[11px] text-muted-foreground">Qty: {part.quantity} x {formatRupiah(part.price)}</p>
-                      </div>
-                      <div className="text-right shrink-0">
-                        <p className="font-mono font-semibold text-foreground">{formatRupiah(part.price * part.quantity)}</p>
-                        {part.buy_price > 0 && (
-                          <p className="text-[10px] text-stone font-mono">modal: {formatRupiah(part.buy_price * part.quantity)}</p>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                {parts.some(p => p.buy_price > 0) && (
-                  <div className="mt-3 flex justify-between border-t border-border pt-2.5">
-                    <span className="text-xs text-muted-foreground">Total Modal Sparepart (HPP)</span>
-                    <span className="text-xs font-mono font-semibold text-muted-foreground">
-                      {formatRupiah(parts.reduce((sum, p) => sum + (p.buy_price * p.quantity), 0))}
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          )}
         </div>
 
         {/* Right: Status + Actions */}
@@ -423,25 +484,25 @@ export default function ServisDetailPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Biaya Jasa</span>
-                  <span className="font-mono text-sm font-medium text-foreground">{formatRupiah(service.service_fee)}</span>
+                  <span className="font-mono text-sm font-medium text-foreground">{formatRupiah(totalServiceFee)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Biaya Sparepart</span>
-                  <span className="font-mono text-sm font-medium text-foreground">{formatRupiah(service.parts_fee)}</span>
+                  <span className="font-mono text-sm font-medium text-foreground">{formatRupiah(totalPartsFee)}</span>
                 </div>
                 <div className="flex justify-between border-t border-border pt-2.5">
                   <span className="text-sm font-bold text-foreground">Total</span>
-                  <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(service.total_fee)}</span>
+                  <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(grandTotal)}</span>
                 </div>
-                {service.dp_amount > 0 && (
+                {totalDp > 0 && (
                   <>
                     <div className="flex justify-between">
                       <span className="text-sm text-badge-success">DP/Uang Muka</span>
-                      <span className="font-mono text-sm font-medium text-badge-success">{formatRupiah(service.dp_amount)}</span>
+                      <span className="font-mono text-sm font-medium text-badge-success">{formatRupiah(totalDp)}</span>
                     </div>
                     <div className="flex justify-between border-t border-border pt-2.5">
                       <span className="text-sm font-bold text-foreground">Sisa Pembayaran</span>
-                      <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(service.total_fee - service.dp_amount)}</span>
+                      <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(grandTotal - totalDp)}</span>
                     </div>
                   </>
                 )}
