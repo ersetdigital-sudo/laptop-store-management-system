@@ -21,6 +21,14 @@ import { sendWhatsAppPDF } from '@/components/pdf/utils'
 import { fetchServiceGroup, groupServicesForList, type ServiceGroup } from '@/lib/servis-group'
 import { DeviceEntry, type DeviceEntryData } from '@/components/servis/device-entry'
 
+// Tampilkan merk + model saja (tanpa prefix "Laptop") untuk tampilan ringkas di list
+function deviceShort(s: Service): string {
+  if (s.device_type?.toLowerCase() === 'laptop') {
+    return [s.device_brand, s.device_model].filter(Boolean).join(' ')
+  }
+  return [s.device_type, s.device_brand, s.device_model].filter(Boolean).join(' ')
+}
+
 export default function ServisPage() {
   const { isAdmin } = useAuth()
   const searchParams = useSearchParams()
@@ -439,15 +447,12 @@ export default function ServisPage() {
                 {/* Customer + device */}
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">{s.customer_name}</p>
-                  {g.deviceCount > 1 ? (
-                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                      {g.services.map(d => `${d.device_type}${d.device_brand ? ` ${d.device_brand}` : ''}${d.device_model ? ` ${d.device_model}` : ''}`.trim()).join(', ')}
-                    </p>
-                  ) : (
-                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                      {s.device_type} {s.device_brand && `· ${s.device_brand}`} {s.device_model && `· ${s.device_model}`}
-                    </p>
-                  )}
+                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                    {g.deviceCount > 1
+                      ? `${deviceShort(g.services[0])} +${g.deviceCount - 1} lainnya`
+                      : deviceShort(s)
+                    }
+                  </p>
                 </div>
 
                 {/* Progress tracker */}
@@ -569,19 +574,11 @@ export default function ServisPage() {
                       </td>
                       <td className="p-3">
                         {g.deviceCount > 1 ? (
-                          <>
-                            <p className="text-xs font-semibold text-ink">{g.services.map(d => d.device_type).join(', ')}</p>
-                            <p className="text-[10px] text-stone mt-0.5">
-                              {g.services.map(d => `${d.device_brand || ''} ${d.device_model || ''}`.trim()).filter(Boolean).join(', ')}
-                            </p>
-                          </>
+                          <p className="text-xs font-semibold text-ink">
+                            {deviceShort(g.services[0])} <span className="text-[10px] font-normal text-stone">+{g.deviceCount - 1} lainnya</span>
+                          </p>
                         ) : (
-                          <>
-                            <p className="text-xs font-semibold text-ink">{s.device_type}</p>
-                            {s.device_brand && (
-                              <p className="text-[10px] text-stone mt-0.5">{s.device_brand} {s.device_model}</p>
-                            )}
-                          </>
+                          <p className="text-xs font-semibold text-ink">{deviceShort(s)}</p>
                         )}
                       </td>
                       <td className="p-3 text-right">
