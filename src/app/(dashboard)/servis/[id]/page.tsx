@@ -15,6 +15,7 @@ import { RupiahInput } from '@/components/ui/rupiah-input'
 import { NotaServisPDF } from '@/components/pdf/nota-servis'
 import { downloadPDF, sendWhatsAppPDF } from '@/components/pdf/utils'
 import { fetchServiceGroup } from '@/lib/servis-group'
+import { DeviceEntry, type DeviceEntryData } from '@/components/servis/device-entry'
 
 export default function ServisDetailPage() {
   const params = useParams()
@@ -29,6 +30,7 @@ export default function ServisDetailPage() {
   const [storeInfo, setStoreInfo] = useState({ storeName: 'Kasir POS', storeAddress: '', storePhone: '' })
   const [bankInfo, setBankInfo] = useState({ bankName: '', bankAccountNumber: '', bankAccountHolder: '' })
   const [showEditForm, setShowEditForm] = useState(false)
+  const [showAddDevice, setShowAddDevice] = useState(false)
 
   useEffect(() => {
     if (params.id) fetchService(params.id as string)
@@ -250,13 +252,22 @@ export default function ServisDetailPage() {
           >
             <ArrowLeft size={18} />
           </button>
-          <button
-            onClick={() => setShowEditForm(true)}
-            aria-label="Edit servis"
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/25 active:scale-95"
-          >
-            <Edit size={16} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowAddDevice(true)}
+              aria-label="Tambah perangkat"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/25 active:scale-95"
+            >
+              <Plus size={16} />
+            </button>
+            <button
+              onClick={() => setShowEditForm(true)}
+              aria-label="Edit servis"
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/15 text-white backdrop-blur-sm transition-colors hover:bg-white/25 active:scale-95"
+            >
+              <Edit size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Hero section */}
@@ -296,10 +307,16 @@ export default function ServisDetailPage() {
             <p className="text-xs text-muted-foreground">Detail transaksi servis pelanggan</p>
           </div>
         </div>
-        <Button onClick={() => setShowEditForm(true)} variant="outline" className="gap-2">
-          <Edit size={14} />
-          Edit
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowAddDevice(true)} variant="outline" className="gap-2">
+            <Plus size={14} />
+            Tambah Perangkat
+          </Button>
+          <Button onClick={() => setShowEditForm(true)} variant="outline" className="gap-2">
+            <Edit size={14} />
+            Edit
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -598,6 +615,18 @@ export default function ServisDetailPage() {
           onSaved={() => {
             fetchService(service.id)
             setShowEditForm(false)
+          }}
+        />
+      )}
+
+      {/* Add Device Modal */}
+      {showAddDevice && service && (
+        <AddDeviceForm
+          service={service}
+          onClose={() => setShowAddDevice(false)}
+          onSaved={() => {
+            fetchService(service.id)
+            setShowAddDevice(false)
           }}
         />
       )}
@@ -963,6 +992,125 @@ function ServisEditForm({ service, initialParts, onClose, onSaved }: { service: 
                 Menyimpan...
               </span>
             ) : 'Simpan Perubahan'}
+          </Button>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+// Add Device Form — tambah perangkat ke grup servis yang sudah ada
+function AddDeviceForm({ service, onClose, onSaved }: { service: Service; onClose: () => void; onSaved: () => void }) {
+  const { user } = useAuth()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [spareparts, setSpareparts] = useState<Product[]>([])
+  const [device, setDevice] = useState<DeviceEntryData>({
+    device_type: 'Laptop', device_brand: '', device_model: '', kelengkapan: '',
+    complaint: '', notes: '', service_fee: 0, items: [],
+  })
+
+  const formatRupiah = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
+
+  useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const { data: cat } = await supabase.from('categories').select('id').eq('name', 'Sparepart').maybeSingle()
+        if (!cat || cancelled) return
+        const { data } = await supabase.from('products').select('*').eq('category_id', cat.id).gt('quantity', 0).order('name')
+        if (!cancelled) setSpareparts(data || [])
+      } catch (e) { console.error(e) }
+    }
+    load()
+    return () => { cancelled = true }
+  }, [])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
+    try {
+      const partsFee = device.items.reduce((s, i) => s + i.price * i.quantity, 0)
+      const deviceTotal = device.service_fee + partsFee
+
+      // Insert new service record — created_at diset sama dengan service asli
+      // supaya tergrup dalam satu nota (window 5 menit di fetchServiceGroup)
+      const { data: newService, error: insertError } = await supabase.from('services').insert({
+        customer_id: service.customer_id,
+        customer_name: service.customer_name,
+        customer_phone: service.customer_phone,
+        device_type: device.device_type,
+        device_brand: device.device_brand || null,
+        device_model: device.device_model || null,
+        complaint: device.complaint || null,
+        kelengkapan: device.kelengkapan || null,
+        service_fee: device.service_fee,
+        parts_fee: partsFee,
+        total_fee: deviceTotal,
+        dp_amount: 0,
+        garansi: service.garansi,
+        warranty_end_date: service.warranty_end_date,
+        notes: device.notes || null,
+        status: service.status,
+        created_by: user?.id,
+        created_at: service.created_at,
+      }).select('id').single()
+
+      if (insertError) throw insertError
+
+      // Simpan sparepart via RPC
+      const itemsPayload = device.items
+        .filter(i => i.product_id && i.quantity > 0)
+        .map(i => ({ product_id: i.product_id, quantity: i.quantity, price: i.price, buy_price: i.buy_price }))
+
+      if (itemsPayload.length > 0) {
+        const { error: partsError } = await supabase.rpc('save_service_parts', {
+          p_service_id: newService.id,
+          p_items: itemsPayload,
+          p_created_by: user?.id,
+        })
+        if (partsError) throw partsError
+      }
+
+      onSaved()
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Gagal menambah perangkat')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <Modal title="Tambah Perangkat" onClose={onClose} maxWidth="2xl">
+      {error && (
+        <div className="mb-4 rounded-lg border border-destructive/20 bg-destructive/10 p-3">
+          <p className="text-xs text-destructive">{error}</p>
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <p className="text-xs text-muted-foreground">
+          Menambah perangkat untuk <span className="font-semibold text-foreground">{service.customer_name}</span> ({service.customer_phone}).
+          Perangkat baru akan tergabung dalam nota yang sama.
+        </p>
+        <DeviceEntry
+          index={0}
+          data={device}
+          spareparts={spareparts}
+          formatRupiah={formatRupiah}
+          onChange={setDevice}
+          onRemove={() => {}}
+          canRemove={false}
+        />
+        <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row">
+          <Button type="button" onClick={onClose} variant="secondary" className="h-11 w-full sm:flex-1">Batal</Button>
+          <Button type="submit" disabled={loading} className="h-11 w-full sm:flex-1">
+            {loading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                Menyimpan...
+              </span>
+            ) : 'Tambah Perangkat'}
           </Button>
         </div>
       </form>
