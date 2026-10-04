@@ -111,8 +111,12 @@ function formatDate(d: string | null): string {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
-// Deskripsi satu perangkat: "Laptop - dell - 5227"
+// Deskripsi satu perangkat: "Lenovo Thinkpad" (tanpa prefix "Laptop")
+// Jika device_type bukan Laptop (mis. Printer, PC), sertakan jenisnya: "Printer - Canon - L2900"
 function deviceLabel(s: Service): string {
+  if (s.device_type?.toLowerCase() === 'laptop') {
+    return [s.device_brand, s.device_model].filter(Boolean).join(' ')
+  }
   return [s.device_type, s.device_brand, s.device_model].filter(Boolean).join(' - ')
 }
 
@@ -227,7 +231,7 @@ export function NotaServisPDF({
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={{ ...styles.tableHeaderText, width: 16, textAlign: 'center' }}>No</Text>
-            <Text style={{ ...styles.tableHeaderText, flex: 1.2 }}>Tipe Laptop</Text>
+            <Text style={{ ...styles.tableHeaderText, flex: 1.2 }}>Tipe Perangkat</Text>
             <Text style={{ ...styles.tableHeaderText, flex: 1.3 }}>Kerusakan</Text>
             <Text style={{ ...styles.tableHeaderText, flex: 1.5 }}>Keterangan / Tindakan</Text>
             <Text style={{ ...styles.tableHeaderText, width: 55, textAlign: 'right' }}>Harga</Text>
