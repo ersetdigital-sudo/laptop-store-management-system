@@ -18,6 +18,7 @@ import { RupiahInput } from '@/components/ui/rupiah-input'
 import PageHeader from '@/components/dashboard/PageHeader'
 import { NotaServisPDF } from '@/components/pdf/nota-servis'
 import { sendWhatsAppPDF } from '@/components/pdf/utils'
+import { fetchServiceGroup } from '@/lib/servis-group'
 import { DeviceEntry, type DeviceEntryData } from '@/components/servis/device-entry'
 
 export default function ServisPage() {
@@ -128,7 +129,8 @@ export default function ServisPage() {
     setSendingWA(service.id)
     setWaResult(null)
     try {
-      const doc = NotaServisPDF({ service, ...storeInfo })
+      const { services, partsByService } = await fetchServiceGroup(service)
+      const doc = NotaServisPDF({ services, partsByService, ...storeInfo })
 
       const tglMasuk = new Date(service.date_in).toLocaleDateString('id-ID', {
         day: 'numeric', month: 'long', year: 'numeric',
@@ -740,11 +742,11 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
   const [spareparts, setSpareparts] = useState<Product[]>([])
   const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(prefillCustomerId || null)
   const [devices, setDevices] = useState<DeviceEntryData[]>([
-    { device_type: 'Laptop', device_brand: '', device_model: '', kelengkapan: '', complaint: '', service_fee: 0, items: [] },
+    { device_type: 'Laptop', device_brand: '', device_model: '', kelengkapan: '', complaint: '', notes: '', service_fee: 0, items: [] },
   ])
   const [form, setForm] = useState({
     customer_name: prefillNama || '', customer_phone: prefillPhone || '',
-    dp_amount: 0, notes: '', garansi: 'Tanpa Garansi',
+    dp_amount: 0, garansi: 'Tanpa Garansi',
   })
 
   // Aggregate totals across all devices
@@ -794,7 +796,7 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
 
   // Tambah perangkat baru
   function addDevice() {
-    setDevices([...devices, { device_type: 'Laptop', device_brand: '', device_model: '', kelengkapan: '', complaint: '', service_fee: 0, items: [] }])
+    setDevices([...devices, { device_type: 'Laptop', device_brand: '', device_model: '', kelengkapan: '', complaint: '', notes: '', service_fee: 0, items: [] }])
   }
 
   // Update data perangkat
@@ -843,7 +845,7 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
           service_fee: d.service_fee, parts_fee: devicePartsFee,
           total_fee: deviceTotal, dp_amount: deviceDp,
           garansi: form.garansi, warranty_end_date: warrantyEnd,
-          notes: form.notes || null,
+          notes: d.notes || null,
           status: 'proses', created_by: user?.id,
         }).select('id').single()
         if (serviceError) throw serviceError
@@ -937,12 +939,6 @@ function ServisForm({ onClose, onSaved, prefillCustomerId, prefillNama, prefillP
             DP / Uang Muka (Rp)
           </label>
           <RupiahInput value={form.dp_amount} onChange={v => setForm({ ...form, dp_amount: v })} className="h-10 w-full font-mono" />
-        </div>
-
-        {/* Keterangan atau Tindakan */}
-        <div>
-          <label className="mb-1.5 block text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Keterangan atau Tindakan</label>
-          <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className="w-full resize-none rounded-lg border border-input bg-surface px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-ring/20" placeholder="Tulis keterangan atau tindakan yang dilakukan..." />
         </div>
 
         {/* Garansi */}

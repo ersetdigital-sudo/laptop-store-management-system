@@ -122,9 +122,22 @@ function formatDate(d: string | null): string {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+// Deskripsi satu perangkat: "Laptop - dell - 5227"
+function deviceLabel(s: Service): string {
+  return [s.device_type, s.device_brand, s.device_model].filter(Boolean).join(' - ')
+}
+
+export interface NotaServisPart {
+  name: string
+  quantity: number
+  price: number
+}
+
 interface NotaServisProps {
-  service: Service
-  parts?: { name: string; quantity: number; price: number }[]
+  // Perangkat-perangkat dalam satu nota (satu transaksi). Bila hanya 1, tetap jalan.
+  services: Service[]
+  // Sparepart per service id
+  partsByService?: Record<string, NotaServisPart[]>
   storeName?: string
   storeAddress?: string
   storePhone?: string
@@ -134,8 +147,8 @@ interface NotaServisProps {
 }
 
 export function NotaServisPDF({
-  service,
-  parts = [],
+  services,
+  partsByService = {},
   storeName = 'CENTRAL LAPTOP COMPUTER',
   storeAddress = '',
   storePhone = '0812-3456-7890',
@@ -143,35 +156,35 @@ export function NotaServisPDF({
   bankAccountNumber = '1234567890',
   bankAccountHolder = 'Toko',
 }: NotaServisProps) {
-  // Build table rows
+  const primary = services[0]
+
+  // Bangun baris tabel: 1 baris per perangkat (keluhan + keterangan + biaya jasa),
+  // lalu sparepart tiap perangkat sebagai baris tambahan.
   const tableRows: { no: number; service: string; harga: number; keterangan: string }[] = []
 
-  // Sparepart rows
-  parts.forEach((part) => {
+  services.forEach((s) => {
+    // Baris perangkat: kolom service = keluhan, keterangan = tindakan per perangkat
+    const keluhan = s.complaint || deviceLabel(s)
     tableRows.push({
       no: tableRows.length + 1,
-      service: `${part.name} (Qty: ${part.quantity})`,
-      harga: part.price * part.quantity,
-      keterangan: '',
+      service: keluhan,
+      harga: s.service_fee,
+      keterangan: s.notes || '',
+    })
+
+    // Sparepart yang dipakai perangkat ini
+    const parts = partsByService[s.id] || []
+    parts.forEach((part) => {
+      tableRows.push({
+        no: tableRows.length + 1,
+        service: `${part.name} (Qty: ${part.quantity})`,
+        harga: part.price * part.quantity,
+        keterangan: '',
+      })
     })
   })
 
-  // Jasa Servis row
-  if (service.service_fee > 0) {
-    tableRows.push({
-      no: tableRows.length + 1,
-      service: 'Jasa Servis',
-      harga: service.service_fee,
-      keterangan: '',
-    })
-  }
-
-  // Fill keterangan di baris pertama saja
-  if (tableRows.length > 0 && service.notes) {
-    tableRows[0].keterangan = service.notes
-  }
-
-  // Pad to minimum 5 rows
+  // Pad ke minimum 5 baris
   while (tableRows.length < 5) {
     tableRows.push({
       no: tableRows.length + 1,
@@ -181,16 +194,31 @@ export function NotaServisPDF({
     })
   }
 
-  // Device type string
-  const tipePerangkat = [service.device_type, service.device_brand, service.device_model]
-    .filter(Boolean)
-    .join(' - ')
+  // Daftar semua perangkat untuk baris "Tipe Laptop"
+  const tipePerangkat = services.map(deviceLabel).filter(Boolean).join(',  ')
 
-  // Garansi info
-  const garansiText = service.garansi && service.garansi.toLowerCase() !== 'tanpa garansi'
-    ? service.garansi
+  // Total agregat seluruh perangkat
+  const grandTotal = services.reduce((sum, s) => sum + (s.total_fee || 0), 0)
+  const totalDp = services.reduce((sum, s) => sum + (s.dp_amount || 0), 0)
+
+  // Garansi (ambil dari perangkat pertama)
+  const garansiText = primary?.garansi && primary.garansi.toLowerCase() !== 'tanpa garansi'
+    ? primary.garansi
     : ''
-  const garansiEndDate = service.warranty_end_date ? formatDate(service.warranty_end_date) : ''
+  const garansiEndDate = primary?.warranty_end_date ? formatDate(primary.warranty_end_date) : ''
+
+  // Kelengkapan: gabung dari semua perangkat (unik)
+  const kelengkapanList = [...new Set(services.map((s) => s.kelengkapan).filter(Boolean))]
+
+  if (!primary) {
+    return (
+      <Document>
+        <Page size="A5" style={styles.page}>
+          <Text>Nota tidak tersedia</Text>
+        </Page>
+      </Document>
+    )
+  }
 
   return (
     <Document>
@@ -206,15 +234,15 @@ export function NotaServisPDF({
           <View style={styles.headerRight}>
             <View style={styles.headerRightRow}>
               <Text style={styles.headerRightLabel}>Tgl Masuk</Text>
-              <Text style={styles.headerRightValue}>: {formatDate(service.date_in)}</Text>
+              <Text style={styles.headerRightValue}>: {formatDate(primary.date_in)}</Text>
             </View>
             <View style={styles.headerRightRow}>
               <Text style={styles.headerRightLabel}>Nama</Text>
-              <Text style={styles.headerRightValue}>: {service.customer_name}</Text>
+              <Text style={styles.headerRightValue}>: {primary.customer_name}</Text>
             </View>
             <View style={styles.headerRightRow}>
               <Text style={styles.headerRightLabel}>No. WA</Text>
-              <Text style={styles.headerRightValue}>: {service.customer_phone}</Text>
+              <Text style={styles.headerRightValue}>: {primary.customer_phone}</Text>
             </View>
           </View>
         </View>
@@ -249,15 +277,15 @@ export function NotaServisPDF({
           <View style={styles.summaryBox}>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Total</Text>
-              <Text style={styles.summaryValue}>{formatRupiah(service.total_fee)}</Text>
+              <Text style={styles.summaryValue}>{formatRupiah(grandTotal)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>DP</Text>
-              <Text style={styles.summaryValue}>{formatRupiah(service.dp_amount)}</Text>
+              <Text style={styles.summaryValue}>{formatRupiah(totalDp)}</Text>
             </View>
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Sisa</Text>
-              <Text style={styles.summaryValue}>{formatRupiah(service.total_fee - service.dp_amount)}</Text>
+              <Text style={styles.summaryValue}>{formatRupiah(grandTotal - totalDp)}</Text>
             </View>
           </View>
         </View>
@@ -265,7 +293,7 @@ export function NotaServisPDF({
         {/* KELENGKAPAN */}
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>Kelengkapan :</Text>
-          <Text style={styles.infoValue}>{service.kelengkapan || '-'}</Text>
+          <Text style={styles.infoValue}>{kelengkapanList.length > 0 ? kelengkapanList.join(', ') : '-'}</Text>
         </View>
 
         {/* GARANSI */}

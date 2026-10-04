@@ -14,6 +14,7 @@ import { Modal } from '@/components/ui/modal'
 import { RupiahInput } from '@/components/ui/rupiah-input'
 import { NotaServisPDF } from '@/components/pdf/nota-servis'
 import { downloadPDF, sendWhatsAppPDF } from '@/components/pdf/utils'
+import { fetchServiceGroup } from '@/lib/servis-group'
 
 export default function ServisDetailPage() {
   const params = useParams()
@@ -83,7 +84,8 @@ export default function ServisDetailPage() {
     if (!service) return
     setPdfLoading(true)
     try {
-      const doc = NotaServisPDF({ service, parts, ...storeInfo, ...bankInfo })
+      const { services, partsByService } = await fetchServiceGroup(service)
+      const doc = NotaServisPDF({ services, partsByService, ...storeInfo, ...bankInfo })
       await downloadPDF(doc, `nota-${service.nota_number}.pdf`)
     } catch (e) {
       console.error('Gagal generate PDF:', e)
@@ -154,7 +156,8 @@ export default function ServisDetailPage() {
     setWaLoading(true)
     setWaResult(null)
     try {
-      const doc = NotaServisPDF({ service, parts, ...storeInfo, ...bankInfo })
+      const { services, partsByService } = await fetchServiceGroup(service)
+      const doc = NotaServisPDF({ services, partsByService, ...storeInfo, ...bankInfo })
       const lines = getWhatsAppMessage()
 
       const result = await sendWhatsAppPDF({
