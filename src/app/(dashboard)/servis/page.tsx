@@ -435,11 +435,6 @@ export default function ServisPage() {
                     {statusLabel(s.status)}
                   </Badge>
                   <div className="flex items-center gap-1.5">
-                    {g.deviceCount > 1 && (
-                      <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
-                        {g.deviceCount} perangkat
-                      </span>
-                    )}
                     <p className="font-mono text-[11px] font-semibold text-stone">#{s.nota_number}</p>
                   </div>
                 </div>
@@ -559,14 +554,7 @@ export default function ServisPage() {
                     return (
                     <tr key={s.id} className="border-b border-hairline hover:bg-secondary/30 transition-colors">
                       <td className="p-3">
-                        <div className="flex items-center gap-1.5">
-                          <p className="text-xs font-mono font-semibold text-ink">{s.nota_number}</p>
-                          {g.deviceCount > 1 && (
-                            <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
-                              {g.deviceCount} perangkat
-                            </span>
-                          )}
-                        </div>
+                        <p className="text-xs font-mono font-semibold text-ink">{s.nota_number}</p>
                       </td>
                       <td className="p-3">
                         <p className="text-xs font-semibold text-ink">{s.customer_name}</p>
