@@ -18,7 +18,7 @@ import { RupiahInput } from '@/components/ui/rupiah-input'
 import PageHeader from '@/components/dashboard/PageHeader'
 import { NotaServisPDF } from '@/components/pdf/nota-servis'
 import { sendWhatsAppPDF } from '@/components/pdf/utils'
-import { fetchServiceGroup } from '@/lib/servis-group'
+import { fetchServiceGroup, groupServicesForList, type ServiceGroup } from '@/lib/servis-group'
 import { DeviceEntry, type DeviceEntryData } from '@/components/servis/device-entry'
 
 export default function ServisPage() {
@@ -34,7 +34,7 @@ export default function ServisPage() {
   })
   const [currentPage, setCurrentPage] = useState(1)
   const [showForm, setShowForm] = useState(false)
-  const [deleteConfirm, setDeleteConfirm] = useState<Service | null>(null)
+  const [deleteConfirm, setDeleteConfirm] = useState<ServiceGroup | null>(null)
   const [restoreStock, setRestoreStock] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [sendingWA, setSendingWA] = useState<string | null>(null)
@@ -90,30 +90,32 @@ export default function ServisPage() {
     } catch (e) { console.error(e) } finally { setLoading(false) }
   }
 
-  async function handleDelete(service: Service) {
+  async function handleDelete(group: ServiceGroup) {
     setDeleting(true)
     try {
-      // Opsional: kembalikan stok sparepart ke gudang (hanya jika dikonfirmasi user)
-      if (restoreStock) {
-        const { error: restoreError } = await supabase.rpc('save_service_parts', {
-          p_service_id: service.id,
-          p_items: [],
-          p_created_by: null,
-        })
-        if (restoreError) throw restoreError
-      }
+      for (const service of group.services) {
+        // Opsional: kembalikan stok sparepart ke gudang (hanya jika dikonfirmasi user)
+        if (restoreStock) {
+          const { error: restoreError } = await supabase.rpc('save_service_parts', {
+            p_service_id: service.id,
+            p_items: [],
+            p_created_by: null,
+          })
+          if (restoreError) throw restoreError
+        }
 
-      // Hapus service_parts terkait dulu
-      const { error: partsError } = await supabase.from('service_parts').delete().eq('service_id', service.id)
-      if (partsError) console.error('Error deleting parts:', partsError)
-      
-      // Hapus stock_movements terkait
-      const { error: movError } = await supabase.from('stock_movements').delete().eq('reference_id', service.id).eq('reference_type', 'servis')
-      if (movError) console.error('Error deleting movements:', movError)
-      
-      // Hapus service
-      const { error } = await supabase.from('services').delete().eq('id', service.id)
-      if (error) throw error
+        // Hapus service_parts terkait dulu
+        const { error: partsError } = await supabase.from('service_parts').delete().eq('service_id', service.id)
+        if (partsError) console.error('Error deleting parts:', partsError)
+        
+        // Hapus stock_movements terkait
+        const { error: movError } = await supabase.from('stock_movements').delete().eq('reference_id', service.id).eq('reference_type', 'servis')
+        if (movError) console.error('Error deleting movements:', movError)
+        
+        // Hapus service
+        const { error } = await supabase.from('services').delete().eq('id', service.id)
+        if (error) throw error
+      }
       
       setDeleteConfirm(null)
       fetchServices()
@@ -270,11 +272,16 @@ export default function ServisPage() {
     }
   }
 
-  const filtered = services.filter(s => {
-    const matchSearch = s.customer_name.toLowerCase().includes(search.toLowerCase()) || 
-                        s.nota_number.toLowerCase().includes(search.toLowerCase()) || 
-                        s.device_type.toLowerCase().includes(search.toLowerCase())
-    const matchStatus = filterStatus === 'all' || s.status === filterStatus
+  // Group services yang termasuk dalam satu nota (customer + created_at berdekatan)
+  const grouped = groupServicesForList(services)
+
+  const filtered = grouped.filter(g => {
+    const matchSearch = g.services.some(s =>
+      s.customer_name.toLowerCase().includes(search.toLowerCase()) ||
+      s.nota_number.toLowerCase().includes(search.toLowerCase()) ||
+      s.device_type.toLowerCase().includes(search.toLowerCase())
+    )
+    const matchStatus = filterStatus === 'all' || g.representative.status === filterStatus
     return matchSearch && matchStatus
   })
 
@@ -380,7 +387,7 @@ export default function ServisPage() {
             {/* Status tabs (mobile only) — ala foodu-orders-tabs */}
             <div className="mt-2 flex gap-1.5 overflow-x-auto pb-0.5 lg:hidden [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {statusTabs.map(t => {
-                const count = t.value === 'all' ? services.length : services.filter(s => s.status === t.value).length
+                const count = t.value === 'all' ? grouped.length : grouped.filter(g => g.representative.status === t.value).length
                 const active = filterStatus === t.value
                 return (
                   <button
@@ -408,7 +415,8 @@ export default function ServisPage() {
               <p className="text-sm text-muted-foreground">Belum ada data servis</p>
             </CardContent>
           </Card>
-        ) : paginatedData.map(s => {
+        ) : paginatedData.map(g => {
+          const s = g.representative
           const pct = progressPct(s.status)
           return (
             <Card key={s.id} className="shadow-card overflow-hidden">
@@ -418,15 +426,28 @@ export default function ServisPage() {
                   <Badge variant={statusVariant(s.status)} className="px-2 py-0.5 text-[10px]">
                     {statusLabel(s.status)}
                   </Badge>
-                  <p className="font-mono text-[11px] font-semibold text-stone">#{s.nota_number}</p>
+                  <div className="flex items-center gap-1.5">
+                    {g.deviceCount > 1 && (
+                      <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+                        {g.deviceCount} perangkat
+                      </span>
+                    )}
+                    <p className="font-mono text-[11px] font-semibold text-stone">#{s.nota_number}</p>
+                  </div>
                 </div>
 
                 {/* Customer + device */}
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">{s.customer_name}</p>
-                  <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
-                    {s.device_type} {s.device_brand && `· ${s.device_brand}`} {s.device_model && `· ${s.device_model}`}
-                  </p>
+                  {g.deviceCount > 1 ? (
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                      {g.services.map(d => `${d.device_type}${d.device_brand ? ` ${d.device_brand}` : ''}${d.device_model ? ` ${d.device_model}` : ''}`.trim()).join(', ')}
+                    </p>
+                  ) : (
+                    <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                      {s.device_type} {s.device_brand && `· ${s.device_brand}`} {s.device_model && `· ${s.device_model}`}
+                    </p>
+                  )}
                 </div>
 
                 {/* Progress tracker */}
@@ -449,10 +470,10 @@ export default function ServisPage() {
                   </div>
                 </div>
 
-                {modalSparepart(s) > 0 && (
+                {g.totalModal > 0 && (
                   <div className="flex items-center justify-between rounded-lg bg-secondary/40 px-2.5 py-1.5">
                     <p className="text-[10px] text-muted-foreground">Modal Sparepart</p>
-                    <p className="text-[10px] font-mono font-medium text-muted-foreground">{formatRupiah(modalSparepart(s))}</p>
+                    <p className="text-[10px] font-mono font-medium text-muted-foreground">{formatRupiah(g.totalModal)}</p>
                   </div>
                 )}
 
@@ -460,7 +481,7 @@ export default function ServisPage() {
                 <div className="flex items-end justify-between gap-2 border-t border-hairline pt-2.5">
                   <div>
                     <p className="text-[10px] text-muted-foreground">Total Biaya</p>
-                    <p className="font-mono text-sm font-bold text-ink">{formatRupiah(s.total_fee)}</p>
+                    <p className="font-mono text-sm font-bold text-ink">{formatRupiah(g.totalFee)}</p>
                   </div>
                   <p className="text-[10px] text-stone">{new Date(s.date_in).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
                 </div>
@@ -491,7 +512,7 @@ export default function ServisPage() {
                       variant="outline"
                       size="sm"
                       className="h-8 w-9 p-0 text-destructive border-destructive/30 hover:bg-destructive/10"
-                      onClick={() => { setRestoreStock(false); setDeleteConfirm(s) }}
+                      onClick={() => { setRestoreStock(false); setDeleteConfirm(g) }}
                     >
                       <Trash2 size={12} />
                     </Button>
@@ -528,27 +549,47 @@ export default function ServisPage() {
                         Belum ada data servis
                       </td>
                     </tr>
-                  ) : paginatedData.map(s => (
+                  ) : paginatedData.map(g => {
+                    const s = g.representative
+                    return (
                     <tr key={s.id} className="border-b border-hairline hover:bg-secondary/30 transition-colors">
                       <td className="p-3">
-                        <p className="text-xs font-mono font-semibold text-ink">{s.nota_number}</p>
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-xs font-mono font-semibold text-ink">{s.nota_number}</p>
+                          {g.deviceCount > 1 && (
+                            <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-semibold text-primary">
+                              {g.deviceCount} perangkat
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="p-3">
                         <p className="text-xs font-semibold text-ink">{s.customer_name}</p>
                         <p className="text-[10px] text-stone mt-0.5">{s.customer_phone}</p>
                       </td>
                       <td className="p-3">
-                        <p className="text-xs font-semibold text-ink">{s.device_type}</p>
-                        {s.device_brand && (
-                          <p className="text-[10px] text-stone mt-0.5">{s.device_brand} {s.device_model}</p>
+                        {g.deviceCount > 1 ? (
+                          <>
+                            <p className="text-xs font-semibold text-ink">{g.services.map(d => d.device_type).join(', ')}</p>
+                            <p className="text-[10px] text-stone mt-0.5">
+                              {g.services.map(d => `${d.device_brand || ''} ${d.device_model || ''}`.trim()).filter(Boolean).join(', ')}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="text-xs font-semibold text-ink">{s.device_type}</p>
+                            {s.device_brand && (
+                              <p className="text-[10px] text-stone mt-0.5">{s.device_brand} {s.device_model}</p>
+                            )}
+                          </>
                         )}
                       </td>
                       <td className="p-3 text-right">
-                        <p className="text-xs font-bold text-ink font-mono">{formatRupiah(s.total_fee)}</p>
+                        <p className="text-xs font-bold text-ink font-mono">{formatRupiah(g.totalFee)}</p>
                       </td>
                       <td className="p-3 text-right">
-                        {modalSparepart(s) > 0 ? (
-                          <p className="text-xs font-medium text-muted-foreground font-mono">{formatRupiah(modalSparepart(s))}</p>
+                        {g.totalModal > 0 ? (
+                          <p className="text-xs font-medium text-muted-foreground font-mono">{formatRupiah(g.totalModal)}</p>
                         ) : (
                           <p className="text-xs text-stone font-mono">-</p>
                         )}
@@ -586,7 +627,7 @@ export default function ServisPage() {
                               variant="ghost" 
                               size="sm" 
                               className="h-7 w-7 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => { setRestoreStock(false); setDeleteConfirm(s) }}
+                              onClick={() => { setRestoreStock(false); setDeleteConfirm(g) }}
                             >
                               <Trash2 size={13} />
                             </Button>
@@ -594,7 +635,8 @@ export default function ServisPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -665,8 +707,13 @@ export default function ServisPage() {
         description={
           <>
             Yakin ingin menghapus servis{' '}
-            <span className="font-semibold text-foreground">{deleteConfirm?.nota_number}</span>?
-            {deleteConfirm && modalSparepart(deleteConfirm) > 0 && (
+            <span className="font-semibold text-foreground">{deleteConfirm?.representative.nota_number}</span>?
+            {deleteConfirm && deleteConfirm.deviceCount > 1 && (
+              <span className="block text-xs text-muted-foreground mt-1">
+                Grup ini berisi {deleteConfirm.deviceCount} perangkat — semuanya akan dihapus.
+              </span>
+            )}
+            {deleteConfirm && deleteConfirm.totalModal > 0 && (
               <label className="mt-3 flex cursor-pointer items-start gap-2.5 rounded-lg border border-border bg-surface p-3 text-left">
                 <input
                   type="checkbox"
@@ -677,7 +724,7 @@ export default function ServisPage() {
                 <span className="text-xs text-foreground">
                   Kembalikan stok sparepart ke gudang
                   <span className="mt-0.5 block text-[10px] text-muted-foreground">
-                    Sparepart yang dipakai servis ini ({formatRupiah(modalSparepart(deleteConfirm))} modal) akan
+                    Sparepart yang dipakai servis ini ({formatRupiah(deleteConfirm.totalModal)} modal) akan
                     dikembalikan ke stok. Wajib dikonfirmasi — tidak otomatis.
                   </span>
                 </span>

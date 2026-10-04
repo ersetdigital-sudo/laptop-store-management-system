@@ -45,3 +45,72 @@ export async function fetchServiceGroup(
 
   return { services, partsByService }
 }
+
+// Tipe untuk grup servis di halaman daftar (satu nota = satu baris)
+export interface ServiceGroup {
+  representative: Service
+  services: Service[]
+  totalFee: number
+  totalModal: number
+  deviceCount: number
+}
+
+// Kelompokkan flat array Service menjadi grup berdasarkan customer_phone + created_at
+// yang berdekatan (dalam 5 menit) — sama dengan logika fetchServiceGroup.
+// Setiap grup menjadi satu baris di halaman daftar servis.
+export function groupServicesForList(services: Service[]): ServiceGroup[] {
+  const windowMs = 5 * 60 * 1000
+  const groups: ServiceGroup[] = []
+  const used = new Set<string>()
+
+  // Sort ascending by created_at untuk grouping
+  const sorted = [...services].sort(
+    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+  )
+
+  for (const s of sorted) {
+    if (used.has(s.id)) continue
+    const created = new Date(s.created_at).getTime()
+    const group: Service[] = [s]
+    used.add(s.id)
+
+    for (const other of sorted) {
+      if (used.has(other.id)) continue
+      if (other.customer_phone !== s.customer_phone) continue
+      if (Math.abs(new Date(other.created_at).getTime() - created) <= windowMs) {
+        group.push(other)
+        used.add(other.id)
+      }
+    }
+
+    // Representative = service pertama (created_at paling awal)
+    group.sort(
+      (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    )
+
+    groups.push({
+      representative: group[0],
+      services: group,
+      totalFee: group.reduce((sum, s) => sum + s.total_fee, 0),
+      totalModal: group.reduce(
+        (sum, s) =>
+          sum +
+          (s.service_parts || []).reduce(
+            (p, part) => p + part.quantity * (part.buy_price || 0),
+            0
+          ),
+        0
+      ),
+      deviceCount: group.length,
+    })
+  }
+
+  // Sort descending by created_at (newest first, sesuai urutan asli)
+  groups.sort(
+    (a, b) =>
+      new Date(b.representative.created_at).getTime() -
+      new Date(a.representative.created_at).getTime()
+  )
+
+  return groups
+}
