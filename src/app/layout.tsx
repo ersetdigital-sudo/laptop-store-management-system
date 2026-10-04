@@ -4,6 +4,9 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { AuthProvider } from '@/lib/auth-context'
 import './globals.css'
 
+// All pages use client-side auth (Supabase session) — no static prerendering
+export const dynamic = 'force-dynamic'
+
 const inter = Inter({ 
   subsets: ['latin'], 
   variable: '--font-inter',
