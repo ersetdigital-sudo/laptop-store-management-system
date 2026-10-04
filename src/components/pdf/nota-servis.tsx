@@ -40,18 +40,6 @@ const styles = StyleSheet.create({
   headerRightRow: { flexDirection: 'row', marginBottom: 1 },
   headerRightLabel: { fontSize: 6, color: '#666', width: 50 },
   headerRightValue: { fontSize: 6, fontWeight: 'bold', fontFamily: 'Helvetica-Bold', flex: 1 },
-  // Tipe Laptop
-  tipeRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    paddingVertical: 2,
-    paddingHorizontal: 3,
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  tipeLabel: { fontSize: 7, fontWeight: 'bold', fontFamily: 'Helvetica-Bold', width: 60 },
-  tipeValue: { fontSize: 7, flex: 1 },
   // Table
   table: { marginBottom: 4, borderWidth: 1, borderColor: '#ddd' },
   tableHeader: {
@@ -75,9 +63,10 @@ const styles = StyleSheet.create({
     minHeight: 12,
   },
   colNo: { width: 16, fontSize: 6, textAlign: 'center' },
-  colService: { flex: 1, fontSize: 6 },
+  colTipe: { flex: 1.2, fontSize: 6, paddingHorizontal: 2 },
+  colKerusakan: { flex: 1.3, fontSize: 6, paddingHorizontal: 2 },
+  colKeteranganTable: { flex: 1.5, fontSize: 5.5, color: '#333', paddingHorizontal: 2 },
   colHarga: { width: 55, fontSize: 6, textAlign: 'right', fontFamily: 'Courier' },
-  colKeterangan: { width: 70, fontSize: 5.5, textAlign: 'center', color: '#333', paddingHorizontal: 2 },
   // Summary
   summaryContainer: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: 4 },
   summaryBox: { width: 140 },
@@ -158,29 +147,18 @@ export function NotaServisPDF({
 }: NotaServisProps) {
   const primary = services[0]
 
-  // Bangun baris tabel: 1 baris per perangkat (keluhan + keterangan + biaya jasa),
-  // lalu sparepart tiap perangkat sebagai baris tambahan.
-  const tableRows: { no: number; service: string; harga: number; keterangan: string }[] = []
+  // Bangun baris tabel: 1 baris per perangkat (tipe + kerusakan + keterangan + harga)
+  const tableRows: { no: number; tipe: string; kerusakan: string; keterangan: string; harga: number }[] = []
 
   services.forEach((s) => {
-    // Baris perangkat: kolom service = keluhan, keterangan = tindakan per perangkat
-    const keluhan = s.complaint || deviceLabel(s)
+    const parts = partsByService[s.id] || []
+    const partsFee = parts.reduce((sum, p) => sum + p.price * p.quantity, 0)
     tableRows.push({
       no: tableRows.length + 1,
-      service: keluhan,
-      harga: s.service_fee,
+      tipe: deviceLabel(s),
+      kerusakan: s.complaint || '',
       keterangan: s.notes || '',
-    })
-
-    // Sparepart yang dipakai perangkat ini
-    const parts = partsByService[s.id] || []
-    parts.forEach((part) => {
-      tableRows.push({
-        no: tableRows.length + 1,
-        service: `${part.name} (Qty: ${part.quantity})`,
-        harga: part.price * part.quantity,
-        keterangan: '',
-      })
+      harga: s.service_fee + partsFee,
     })
   })
 
@@ -188,14 +166,12 @@ export function NotaServisPDF({
   while (tableRows.length < 5) {
     tableRows.push({
       no: tableRows.length + 1,
-      service: '',
-      harga: 0,
+      tipe: '',
+      kerusakan: '',
       keterangan: '',
+      harga: 0,
     })
   }
-
-  // Daftar semua perangkat untuk baris "Tipe Laptop"
-  const tipePerangkat = services.map(deviceLabel).filter(Boolean).join(',  ')
 
   // Total agregat seluruh perangkat
   const grandTotal = services.reduce((sum, s) => sum + (s.total_fee || 0), 0)
@@ -247,26 +223,22 @@ export function NotaServisPDF({
           </View>
         </View>
 
-        {/* TIPE LAPTOP */}
-        <View style={styles.tipeRow}>
-          <Text style={styles.tipeLabel}>Tipe Laptop :</Text>
-          <Text style={styles.tipeValue}>{tipePerangkat || '-'}</Text>
-        </View>
-
         {/* TABEL UTAMA */}
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={{ ...styles.tableHeaderText, width: 16, textAlign: 'center' }}>No</Text>
-            <Text style={{ ...styles.tableHeaderText, flex: 1 }}>Service / Kerusakan / Upgrade</Text>
-            <Text style={{ ...styles.tableHeaderText, width: 60, textAlign: 'center' }}>Keterangan</Text>
+            <Text style={{ ...styles.tableHeaderText, flex: 1.2 }}>Tipe Laptop</Text>
+            <Text style={{ ...styles.tableHeaderText, flex: 1.3 }}>Kerusakan</Text>
+            <Text style={{ ...styles.tableHeaderText, flex: 1.5 }}>Keterangan / Tindakan</Text>
             <Text style={{ ...styles.tableHeaderText, width: 55, textAlign: 'right' }}>Harga</Text>
           </View>
 
           {tableRows.map((row, i) => (
             <View key={i} style={styles.tableRow}>
               <Text style={styles.colNo}>{row.no}</Text>
-              <Text style={styles.colService}>{row.service}</Text>
-              <Text style={{ ...styles.colKeterangan, textAlign: 'center' }}>{row.keterangan}</Text>
+              <Text style={styles.colTipe}>{row.tipe}</Text>
+              <Text style={styles.colKerusakan}>{row.kerusakan}</Text>
+              <Text style={styles.colKeteranganTable}>{row.keterangan}</Text>
               <Text style={styles.colHarga}>{row.harga > 0 ? formatRupiah(row.harga) : ''}</Text>
             </View>
           ))}
