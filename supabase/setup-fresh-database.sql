@@ -939,6 +939,7 @@ CREATE TABLE IF NOT EXISTS public.supplier_receipts (
   supplier_phone TEXT,
   purchase_date DATE NOT NULL DEFAULT CURRENT_DATE,
   total BIGINT NOT NULL DEFAULT 0,     -- total nilai pembelian (snapshot)
+  dp_amount BIGINT NOT NULL DEFAULT 0, -- DP/uang muka yang dibayar ke supplier
   payment_method TEXT NOT NULL DEFAULT 'Cash',
   notes TEXT,
   status TEXT NOT NULL DEFAULT 'selesai' CHECK (status IN ('selesai', 'dibatalkan')),

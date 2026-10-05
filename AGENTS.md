@@ -28,4 +28,6 @@ SQL schema + migrations live in `supabase/` (schema.sql, setup-fresh-database.sq
 
 ## Notes
 - `next.config.ts` sets `allowedDevOrigins` from `BASE44_PUBLIC_HOST_SUFFIX` so the preview origin can access dev assets/HMR.
-- `.env.base44-defaults` holds boot placeholders; `/run/base44/app.env` (platform secrets) always overrides them.
+- `.env.base44-defaults` holds boot placeholders (un-ignored in `.gitignore` so the compose file stays usable); `/run/base44/app.env` (platform secrets) always overrides them.
+- Remote Supabase schema can be updated from the sandbox without a local DB: `POST https://api.supabase.com/v1/projects/<project-ref>/database/query` with `Authorization: Bearer $SUPABASE_ACCESS_TOKEN` (from `/run/base44/app.env`) and body `{"query":"..."}`. Project ref = first label of `NEXT_PUBLIC_SUPABASE_URL`.
+- `supplier_receipts.dp_amount` (DP/uang muka yang dibayar ke supplier, `sisa = total - dp_amount`) comes from `supabase/migration_kwitansi_dp.sql`. DP is informational only — `total`, pengeluaran, and laba formulas are unchanged.

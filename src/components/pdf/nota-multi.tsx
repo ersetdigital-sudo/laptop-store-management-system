@@ -277,7 +277,7 @@ export function NotaMultiPDF({
   const isPembelian = mode === 'pembelian'
   const selectedBonus = sale.bonus || []
   const hasBonus = selectedBonus.length > 0 || sale.bonus_lainnya
-  const hasDP = !isPembelian && (sale.dp_amount ?? 0) > 0
+  const hasDP = (sale.dp_amount ?? 0) > 0
   const sisa = sale.sell_price - (sale.dp_amount ?? 0)
   const hasUnit = items.some(i => i.type === 'unit')
 
