@@ -171,6 +171,7 @@ export default function RiwayatKwitansiPage() {
           buyer_phone: receipt.supplier_phone,
           sell_price: receipt.total,
           buy_price: receipt.total,
+          dp_amount: receipt.dp_amount || 0,
           payment_method: receipt.payment_method,
           garansi: 'Tanpa Garansi',
           warranty_end_date: null,
@@ -329,7 +330,12 @@ export default function RiwayatKwitansiPage() {
               <span className="text-[11px] text-muted-foreground">
                 {new Date(r.purchase_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} · {(r.supplier_receipt_items || []).length} item
               </span>
-              <span className="font-mono text-sm font-bold text-amber-600">{formatRupiah(r.total)}</span>
+              <div className="text-right">
+                <span className="font-mono text-sm font-bold text-amber-600">{formatRupiah(r.total)}</span>
+                {(r.dp_amount || 0) > 0 && (
+                  <p className="text-[10px] text-muted-foreground">DP {formatRupiah(r.dp_amount)} · Sisa {formatRupiah(r.total - r.dp_amount)}</p>
+                )}
+              </div>
             </div>
           </div>
         ))}
@@ -374,6 +380,11 @@ export default function RiwayatKwitansiPage() {
                 </td>
                 <td className="px-5 py-3.5 text-right">
                   <span className="font-mono text-sm font-bold text-amber-600">{formatRupiah(r.total)}</span>
+                  {(r.dp_amount || 0) > 0 && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5 whitespace-nowrap">
+                      DP {formatRupiah(r.dp_amount)} · Sisa {formatRupiah(r.total - r.dp_amount)}
+                    </p>
+                  )}
                 </td>
                 <td className="px-5 py-3.5 text-center">
                   <Badge variant={r.status === 'selesai' ? 'success' : 'destructive'} className="text-[10px] px-2 py-0.5 capitalize">{r.status}</Badge>
@@ -518,9 +529,23 @@ export default function RiwayatKwitansiPage() {
             </div>
 
             {/* Total — Prominent */}
-            <div className="flex items-center justify-between rounded-2xl bg-[#04123F] px-4 py-3">
-              <span className="text-xs font-medium text-white/70">Total Pembelian</span>
-              <span className="font-mono text-lg font-bold text-[#FEC40B]">{formatRupiah(detailReceipt.total)}</span>
+            <div className="space-y-2 rounded-2xl bg-[#04123F] px-4 py-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-white/70">Total Pembelian</span>
+                <span className="font-mono text-lg font-bold text-[#FEC40B]">{formatRupiah(detailReceipt.total)}</span>
+              </div>
+              {(detailReceipt.dp_amount || 0) > 0 && (
+                <>
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-white/70">DP / Uang Muka</span>
+                    <span className="font-mono text-sm font-bold text-white">{formatRupiah(detailReceipt.dp_amount)}</span>
+                  </div>
+                  <div className="flex items-center justify-between border-t border-white/15 pt-2">
+                    <span className="text-xs font-medium text-white/70">Sisa Belum Dibayar</span>
+                    <span className="font-mono text-sm font-bold text-[#FEC40B]">{formatRupiah(detailReceipt.total - detailReceipt.dp_amount)}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Notes */}

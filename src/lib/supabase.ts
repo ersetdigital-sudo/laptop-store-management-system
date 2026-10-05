@@ -183,6 +183,7 @@ export interface SupplierReceipt {
   supplier_phone: string | null
   purchase_date: string
   total: number
+  dp_amount: number
   payment_method: string
   notes: string | null
   status: 'selesai' | 'dibatalkan'

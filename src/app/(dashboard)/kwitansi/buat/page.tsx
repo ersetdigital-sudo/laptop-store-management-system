@@ -67,8 +67,9 @@ export default function BuatKwitansiPage() {
   const [form, setForm] = useState({
     supplier_name: '', supplier_phone: '', purchase_date: todayLocal(),
     payment_method: 'Cash', notes: '',
+    dp_amount: 0,
   })
-  const [saved, setSaved] = useState<{ receipt_number: string; items: FormItem[]; total: number } | null>(null)
+  const [saved, setSaved] = useState<{ receipt_number: string; items: FormItem[]; total: number; dp_amount: number } | null>(null)
   const [pdfLoading, setPdfLoading] = useState(false)
 
   async function fetchPaymentMethods() {
@@ -96,6 +97,8 @@ export default function BuatKwitansiPage() {
 
   const formatRupiah = (n: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n)
   const total = items.reduce((sum, item) => sum + (item.buy_price * item.quantity), 0)
+  const dpAmount = Math.min(form.dp_amount, total)
+  const sisa = total - dpAmount
   const itemName = (item: FormItem) =>
     item.item_type === 'unit' ? `${item.brand} ${item.model}`.trim() || item.name : item.name.trim()
 
@@ -115,6 +118,8 @@ export default function BuatKwitansiPage() {
   function validate(): string | null {
     if (!form.supplier_name.trim()) return 'Nama supplier wajib diisi'
     if (!form.purchase_date) return 'Tanggal pembelian wajib diisi'
+    if (form.dp_amount < 0) return 'DP tidak boleh negatif'
+    if (form.dp_amount > total) return 'DP tidak boleh melebihi total pembelian'
     if (items.length === 0) return 'Tambahkan minimal 1 item'
     for (const item of items) {
       if (item.item_type === 'sparepart' && !item.name.trim()) return 'Nama barang wajib diisi untuk item sparepart'
@@ -153,6 +158,7 @@ export default function BuatKwitansiPage() {
         supplier_phone: form.supplier_phone.trim() || null,
         purchase_date: form.purchase_date,
         total,
+        dp_amount: dpAmount,
         payment_method: form.payment_method,
         notes: form.notes.trim() || null,
         created_by: user?.id,
@@ -245,7 +251,7 @@ export default function BuatKwitansiPage() {
         if (itemError) throw itemError
       }
 
-      setSaved({ receipt_number: receipt.receipt_number, items: [...items], total })
+      setSaved({ receipt_number: receipt.receipt_number, items: [...items], total, dp_amount: dpAmount })
     } catch (err: unknown) {
       // Cleanup parsial: kalau gagal di tengah proses item, hapus data yang sudah terlanjur dibuat
       if (receiptId) {
@@ -280,6 +286,7 @@ export default function BuatKwitansiPage() {
           buyer_phone: form.supplier_phone || null,
           sell_price: saved.total,
           buy_price: saved.total,
+          dp_amount: saved.dp_amount,
           payment_method: form.payment_method,
           garansi: 'Tanpa Garansi',
           warranty_end_date: null,
@@ -307,7 +314,7 @@ export default function BuatKwitansiPage() {
     return (
       <div className="space-y-3">
         <div className="flex items-center gap-3">
-          <Button onClick={() => { setSaved(null); setItems([newItem()]); setForm(f => ({ ...f, supplier_name: '', supplier_phone: '', notes: '' })) }} variant="secondary" className="h-9 w-9 shrink-0 p-0">
+          <Button onClick={() => { setSaved(null); setItems([newItem()]); setForm(f => ({ ...f, supplier_name: '', supplier_phone: '', notes: '', dp_amount: 0 })) }} variant="secondary" className="h-9 w-9 shrink-0 p-0">
             <ArrowLeft size={16} />
           </Button>
           <div>
@@ -340,6 +347,18 @@ export default function BuatKwitansiPage() {
                 <span>Total Pembelian</span>
                 <span className="font-mono">{formatRupiah(saved.total)}</span>
               </div>
+              {saved.dp_amount > 0 && (
+                <>
+                  <div className="flex justify-between text-sm pt-1">
+                    <span className="text-muted-foreground">DP / Uang Muka</span>
+                    <span className="font-mono font-medium text-badge-success">- {formatRupiah(saved.dp_amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm pt-1">
+                    <span className="font-bold">Sisa Belum Dibayar</span>
+                    <span className="font-mono font-bold text-foreground">{formatRupiah(saved.total - saved.dp_amount)}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2 justify-center">
@@ -349,7 +368,7 @@ export default function BuatKwitansiPage() {
               </Button>
             </div>
             <div className="flex gap-2 justify-center">
-              <Button onClick={() => { setSaved(null); setItems([newItem()]); setForm(f => ({ ...f, supplier_name: '', supplier_phone: '', notes: '' })) }} variant="secondary">Buat Lagi</Button>
+              <Button onClick={() => { setSaved(null); setItems([newItem()]); setForm(f => ({ ...f, supplier_name: '', supplier_phone: '', notes: '', dp_amount: 0 })) }} variant="secondary">Buat Lagi</Button>
               <Button onClick={() => router.push('/kwitansi')} variant="outline">Lihat Riwayat</Button>
             </div>
           </CardContent>
@@ -535,13 +554,26 @@ export default function BuatKwitansiPage() {
                 <textarea value={form.notes} onChange={e => setForm({ ...form, notes: e.target.value })} rows={2} className={textareaClass} placeholder="Opsional — keterangan pembelian..." />
               </div>
 
-              {/* Total */}
-              <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/50 p-4">
-                <div className="flex items-center gap-2">
-                  <FileText size={16} className="text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Total Nilai Pembelian ({items.length} item)</span>
+              {/* Total & DP */}
+              <div className="rounded-lg border border-border bg-secondary/50 p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <FileText size={16} className="text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">Total Nilai Pembelian ({items.length} item)</span>
+                  </div>
+                  <span className="font-mono text-lg font-bold text-badge-warning">{formatRupiah(total)}</span>
                 </div>
-                <span className="font-mono text-lg font-bold text-badge-warning">{formatRupiah(total)}</span>
+                <div className="mt-3 grid grid-cols-1 gap-3 border-t border-border pt-3 sm:grid-cols-2">
+                  <div>
+                    <label className={labelClass}>DP / Uang Muka (Rp)</label>
+                    <RupiahInput value={form.dp_amount} onChange={v => setForm(f => ({ ...f, dp_amount: v }))} className="h-10 w-full font-mono" />
+                    <p className="mt-1 text-[10px] text-muted-foreground">Uang muka yang dibayar ke supplier (opsional)</p>
+                  </div>
+                  <div className="flex flex-col justify-center">
+                    <span className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Sisa Belum Dibayar</span>
+                    <span className="font-mono text-lg font-bold text-foreground">{formatRupiah(sisa)}</span>
+                  </div>
+                </div>
               </div>
 
               <div className="flex flex-col-reverse gap-2 border-t border-border pt-4 sm:flex-row">
